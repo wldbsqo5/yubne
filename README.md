@@ -2,4 +2,4 @@
 
 Hi humans!
 
-hubot here, 
+IT 정보 공유
