@@ -19,3 +19,6 @@ Level1 => Level20
 Level1 문제를 풀어야 2번이열린다.
 
  root /hackerschool
+
+FTZ 에서 ifconfig 해서 나온 eth0 에 ip를 실제 pc 에서 ping 을 통해서 ping 가는지 확인
+FTZ 에서 ifconfig 해서 나온 eth0 에 ip 사용하여 secureCRT 만들고 실행 
