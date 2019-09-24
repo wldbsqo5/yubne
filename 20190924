@@ -3,3 +3,102 @@ FTZ 활용하는법을 좀알다보면
 
 프로그램을 올라가면 프로세스라고 하는데
 실제 물리적 메모리에올라가는게아니고 가상 메모리에 올라가게된다.
+
+
+1) 메모리 세그먼트(영역) 유형
+[낮은주소값]
+- Text            함수의 코드 내용이 있는 영역
+- Data            전역 변수, 정적 변수, 초기화된 변수 값들이 있는 영역
+- BSS             초기화되지 않은 변수 값들이 있는 영역
+- Heap            동적 할당을 할때 사용하는 영역
+- Stack           지역 변수, 함수의 인자값, 리턴 주소들이 있는 영역 (중요)
+- argc(count)     프로그램이 실행될때 사용하는 인자갯수
+- argv(value)     프로그램이 실행될때 사용하는 인자값
+- env ()
+[높은주소값]
+
+2) 'test2.c' 제작
+vi test2.c 를 어셈블리어로 변환
+
+ex ) cat test2.a
+
+.text
+
+.globl function
+.type   function,@function
+
+function:
+
+  (12)pushl   %ebp
+      movl    %esp, %ebp
+  - 함수 프롤로그
+
+  (13)subl    $40, %esp
+  - ESP에서 40byte 만큼 뺀다.
+  - buffer1[5], buffer2[10]를 위한 40Byte 공간을 확보한다. 이때, 25Byte 는 쓰래기값이다.
+
+  (14)leave
+  - function 함수 종료
+
+  (15)ret
+  - function 함수를 종료하고, 스택에 저장되어 잇는 ebp를 제거한다.
+
+.Lfe1:
+.size   function,.Lfe1-function
+
+.globl main
+.type   main,@function
+
+main:
+
+  (1) pushl   %ebp
+  - 스택에 ret 주소가 저장된 이후, 최초의 프레임 포인터인 EBP를 스택에 저장한다.
+  - 이때, EBP는 { 함수 시작 전 }의 기준점이며, SFP(Saved Frame Pointer)라고 한다.
+
+  (2)movl    %esp, %ebp
+  - ESP 값을 EBP에 대입한다.
+  - 그럼 ESP는 EBP와 동일 선상에 위치하게 되며, 여기까지 처리를 함수 프롤로그 라고한다.
+
+  (3)subl    $8, %esp
+  - ESP에서 8byte 만큼 뺀다. (이유 : 지역 변수를 위한 공간 확보를 위해)
+
+  (4)andl    $-16, %esp
+  - 의미없는 동작 (성능향상하기위한 명령어이긴하다)
+  - ESP 값과 -16을 AND 연산을 실시하여 새로운 ESP 값을 갖는다.( AND 연산을 실시한다 )
+
+  (5)movl    $0, %eax
+  - '0'을 EAX 레지스터(cpu)에 대입한다. (지역변수 개념)
+  - EAX 레지스터 값을 '0'으로 초기화 한다.
+
+  (6)subl    %eax, %esp
+  - ESP 값을 EAX 값만큼 뺀다.
+  - 현재 EAX 값이 '0'이므로 ESP 값을 변경되지 않는다.
+
+  (7)subl    $4, %esp
+  - ESP에서 4byte 만큼 뺀다.(이유 : 지역 변수를 위한 공간 확보를 위해)
+
+  (8)pushl   $3
+  - 스택에 3-> 2-> 1 순으로 값을 저장한다.(LIFO : Last-In First-Out)
+
+  (9)pushl   $2
+  - 스택에 3-> 2-> 1 순으로 값을 저장한다.
+
+  (10)pushl   $1
+  - 스택에 3-> 2-> 1 순으로 값을 저장한다.
+
+  (11)call    function
+  - 'function' 함수를 호출한다.
+
+  (16)addl    $16, %esp
+  - ESP에서 16Byte 더한다.
+  - 공간을 16Byte 공간을 제거한다.
+
+  (17)movl    $0, %eax
+  - '0'을 EAX 값에 대입한다. 즉, EAX 레지스터 값을 '0'으로 초기화한다.
+
+  (18)leave
+  - main 함수 종료
+
+  (19)ret
+  - main 함수를 종료하고, 스택에 저장되어 잇는 ebp를 제거한다.
+  
