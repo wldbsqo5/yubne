@@ -1,0 +1,25 @@
+(9) 브레이크 포인트 9 ()
+Breakpoint 9, 0x08048311 in main () at test2.c:14
+
+(gdb) x/12x $esp
+0xbfffe0c8:     0x00000003      0x0804832e      0x42130a14      0x40015360
+0xbfffe0d8:     0xbfffe0f8      0x42015574      0x00000001      0xbfffe124
+0xbfffe0e8:     0xbfffe12c      0x4001582c      0x00000001      0x08048244
+
+(gdb) info reg
+eax            0x0      0
+ecx            0x42015554       1107383636
+edx            0x40016bc8       1073834952
+ebx            0x42130a14       1108544020
+esp            0xbfffe0c8       0xbfffe0c8
+ebp            0xbfffe0d8       0xbfffe0d8
+esi            0x40015360       1073828704
+edi            0x8048354        134513492
+eip            0x8048311        0x8048311 <main+21>
+eflags         0x396    [ PF AF SF TF IF ]
+cs             0x23     35
+ss             0x2b     43
+ds             0x2b     43
+es             0x2b     43
+fs             0x0      0
+gs             0x33     51

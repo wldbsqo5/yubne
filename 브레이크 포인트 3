@@ -1,0 +1,26 @@
+(3) 브레이크 포인트 3 ()
+Breakpoint 3, 0x080482ff in main () at test2.c:13
+13      {
+
+(gdb) x/12x $esp
+0xbfffe0d8:     0xbfffe0f8      0x42015574      0x00000001      0xbfffe124
+0xbfffe0e8:     0xbfffe12c      0x4001582c      0x00000001      0x08048244
+0xbfffe0f8:     0x00000000      0x08048265      0x080482fc      0x00000001
+
+(gdb) info reg
+eax            0x1      1
+ecx            0x42015554       1107383636
+edx            0x40016bc8       1073834952
+ebx            0x42130a14       1108544020
+esp            0xbfffe0d8       0xbfffe0d8
+ebp            0xbfffe0d8       0xbfffe0d8
+esi            0x40015360       1073828704
+edi            0x8048354        134513492
+eip            0x80482ff        0x80482ff <main+3>
+eflags         0x346    [ PF ZF TF IF ]
+cs             0x23     35
+ss             0x2b     43
+ds             0x2b     43
+es             0x2b     43
+fs             0x0      0
+gs             0x33     51
