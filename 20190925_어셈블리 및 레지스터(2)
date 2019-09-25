@@ -1,0 +1,143 @@
+
+ EAX (Extended Accumulator Register)
+
+ - { 함수의 리턴값 } 이 저장되는 레지스터  (중요)
+
+ EDX (Extended Data Register)
+
+ ECX (Extended Counter Register)
+
+ - 반복횟수를 정해놓고 반복을 돌린다.
+
+ EBX (Extended Base Register)
+
+ - 중요도가 가장 떨어진다.
+
+ ESP (Extended Stack Porinter)
+
+ EBP (Extended Base Pointer)
+
+ EIP (Extended Instruction Pointer)
+
+ 3. 메모리 구조
+
+ [낮은주소값]
+ - Text            함수의 코드 내용이 있는 영역  (코드라고 말해도됨)
+ - Data            전역 변수, 정적 변수, 초기화된 변수 값들이 있는 영역
+ - BSS             초기화되지 않은 변수 값들이 있는 영역
+ - Heap            동적 할당을 할때 사용하는 영역
+ - Stack           지역 변수, 함수의 인자값, 리턴 주소들이 있는 영역 (중요)
+ - argc(count)     프로그램이 실행될때 사용하는 인자갯수
+ - argv(value)     프로그램이 실행될때 사용하는 인자값
+ - env ()
+ [높은주소값]
+
+ 4. 스택(Stack)
+
+ - 함수 호출과 관련된 지역 변수, 함수의 인자값, 리턴 주소가 저장되는 영역
+ - 함수 호출과 함깨 생성, 함수 호출 완료되면 소멸
+ - 스택에 값이 저장될때 높은 주소에서 낮은 주소로 저장됨
+ - 먼저 들어간게 나중에 나가게된다. (나중에 들어간게 먼저 나감)
+ - 스택에 값이 저장되면 ESP는 현재 위치에서 낮은 주소 위치로 이동되며, EBP는 현재 값에 변경 X
+ (컴파일러가 발전되서, 쓰레기값을 많이넣어둔다.(보안상))
+
+
+ 5. 데이터 메모리 저장 방식
+
+  1) 바이트 오더링 (Byte Ordering)
+
+  - 데이터를 메모리에 저장할때, 1Byte 단위로 저장하는 방식을 말한다.
+
+  2) 빅 엔디안 (Big Endian)
+
+  - 데이터를 메모리에 저장할때, 앞에서부터 순서대로 저장하는 방식을 말한다.
+  - UNIX 및 네트워크 프로토콜에서 사용
+    ex ) 0x12345678 -> 12 34 56 78
+
+  3) 리틀 엔디안 (Little Endian)
+
+  - 데이터를 메모리에 저장할때, 뒤에서부터 순서대로 저장하는 방식을 말한다. (자주쓴다)
+  - Intel CPU에서 사용
+    ex ) 0x12345678 -> 78 56 34 12
+
+
+  6. 어셈블리어 형식
+
+  - 형식 : OPCODE Operand1 Operand2 로 구성되어잇음
+  - Intel 문법    옵코드가잇으면 [Destination] [Source] <- 리버싱 과정 진행시 사용
+  - AT&T 문법     옵코드가없으면 [Source] [Destination] <- FTZ 수업 진행시 사용
+
+
+
+  7. 어셈블리 자료형 이름
+
+  어셈블리        바이트         자료형
+
+  BYTE           1Byte          char  (알아두면좋음)
+  WORD           2Byte          Short
+  DWORD          4Byte          int   (알아두면좋음)
+  QWORD          7Byte          double
+
+
+  8. 어셈블리어 명령어 (이동/대입 명령어)
+  - 수업시 진행은 AT&T 문법으로 진행합니다.
+
+  1) MOV
+  - mov [Operand1] [Operand2]
+  - 내용 : [Operand1]를 [Operand2]로 대입/이동한다.
+    ex ) mov eax, ecx (eax 값을 ecx에 대입/이동)
+
+  2) LEA
+  - lea [Operand1] [Operand2]
+  - 내용 : [Operand1]의 주소값을 [Operand2]로 대입/이동한다.
+    ex ) lea [ebp-4], eax (ebp-4 주소 값을 eax에 대입 이동한다는뜻)
+
+  ex )
+
+  ebp-4 0x3311AACC
+  *(ebp-4) 5
+
+  [참고]mov, lea 차이점
+  mov [ebp-4], eax  5가 eax에 대입/이동
+  lea [ebp-4], eax  '0x3311AACC'를 eax에 대입/이동
+
+
+  9. 어셈블리 명령어(더하기/빼기 명령어)
+
+  1) ADD
+  - 형식 : add [Operand1] [Operand2]
+  - 내용 : [Operand1]과 [Operand2]를 더한 값을 [Operand2]에 저장한다.
+    ex ) add 5, eax ( eax = 5+ eax )
+  - 더하기 연산뿐 아니라, 스택에 공간을 제거할때도 사용 (addl $16, %esp = esp+16)
+
+  2) SUB
+
+  - 형식 : sub [Operand1] [Operand2]
+  - 내용 : [Operand1]과 [Operand2]를 뺀 값을 [Operand2]에 저장한다.
+    ex ) sub 5, eax ( eax = 5 - eax)
+  - 빼기 연산뿐 아니라, 스택에 공간을 확보할때도 사용함 (subl $8, %esp = esp-8)
+
+
+  10. 어셈블리 명령어(곱하기/나누기 명령어)
+
+  1) IMUL
+  - 형식 : imul [Operand1][Operand2]
+  - 내용 : [Operand1]과 [Operand2]를 곱한 값을 [Operand2]에 저장한다.
+
+  2) IDIV
+  - 형식 : idiv [Operand1][Operand2]
+  - 내용 : [Operand1]과 [Operand2]를 나눈 값을 [Operand2]에 저장한다.
+
+
+  11. 어셈블리 명령어(증가/감소 명령어)
+
+  1) INC
+
+  - 형식 : inc [Operand]
+  - 내용 : [Operand]에서 '1'를 증가 실시
+    ex ) inc ebx (현재 ebx 값에서 '1'를 증가)
+
+  2) DEC
+  - 형식 : DEC [Operand]
+  - 내용 : [Operand]에서 '1'를 감소 실시
+    ex ) dec ebx (현재 ebx 값에서 '1'를 감소)
