@@ -1,0 +1,33 @@
+
+[level3@ftz tmp]$ ls -l /bin/autodig
+-rwsr-x---    1 level4   level3      12194 Sep 10  2011 /bin/autodig
+[level3@ftz tmp]$ /bin/autodig "8.8.8.8 www.google.com"
+
+; <<>> DiG 9.2.1 <<>> @8.8.8.8 www.google.com version.bind chaos txt
+;; global options:  printcmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 15473
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;www.google.com.                        IN      A
+
+;; ANSWER SECTION:
+www.google.com.         160     IN      A       216.58.199.100
+
+;; Query time: 78 msec
+;; SERVER: 8.8.8.8#53(8.8.8.8)
+;; WHEN: Thu Sep 26 20:49:34 2019
+;; MSG SIZE  rcvd: 48
+
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: SERVFAIL, id: 9389
+;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;version.bind.                  CH      TXT
+
+;; Query time: 48 msec
+;; SERVER: 8.8.8.8#53(8.8.8.8)
+;; WHEN: Thu Sep 26 20:49:34 2019
+;; MSG SIZE  rcvd: 30
