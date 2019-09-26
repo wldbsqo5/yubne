@@ -1,0 +1,5 @@
+6.   vi.assem6.c
+
+[참고] gcc 2.96 버전
+- gcc 2.96 버전 이상 부터는 버퍼 8Byte 미만은 4Byte 할당
+- gcc 2.96 버전 이상 버퍼 8Byte 이상부터는 16Byte 단위
