@@ -1,0 +1,12 @@
+1. 'level5-1.c','level5-2.c' 생성
+
+[level5@ftz tmp]$ vi level5.sh
+./level5-1 & ./level5-2
+[level5@ftz tmp]$ chmod 755 level5.sh
+[level5@ftz tmp]$ gcc -o level5-2 level5-2.c
+[level5@ftz tmp]$ ./level5.sh
+what the hell - level6 비밀번호
+
+2) SIGINT : 현재 수행중인 프로세스를 종료하고 나오는 시그널 (명령어: ctrl+c)
+
+come together - level7 비밀번호

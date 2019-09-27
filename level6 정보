@@ -1,0 +1,37 @@
+
+
+
+(gdb) x/s 0x80486f2
+0x80486f2:       "cat hint"
+
+(gdb) x/s 0x80486fb
+0x80486fb:       "clear"
+
+(gdb) x/s 0x8048720
+0x8048720:       "\n  ", '#' <repeats 37 times>, "\n"
+
+hint - 인포샵 bbs의 텔넷 접속 메뉴에서 많이 사용되던 해킹 방법이다.
+
+  printf  #####################################
+  printf  ##                                 ##
+  printf  ##         텔넷 접속 서비스        ##
+  printf  ##                                 ##
+  printf  ##                                 ##
+  printf  ##     1. 하이텔     2. 나우누리   ##
+  printf  ##     3. 천리안                   ##
+  printf  ##                                 ##
+  printf  #####################################
+
+  printf  접속하고 싶은 bbs를 선택하세요 :
+
+  printf  잘못 입력하셨습니다. 접속을 종료합니다.
+
+  - c 언어로 생각
+  if (i==1) system("telnet 203.245.15.76");
+  if (i==2) system("telnet 203.238.129.97");
+  if (i==3) system("telnet 210.120.128.180");
+
+  if (i!=1 & 1!=2 & i!=3)
+  printf("잘못 입력하셧습니다. 접속을 종료합니다.\n");
+
+  }
