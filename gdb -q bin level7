@@ -1,0 +1,66 @@
+[root@ftz root]# gdb -q /bin/level7
+
+(gdb) disas main
+
+   0x08048454 <+0>:     push   %ebp
+   0x08048455 <+1>:     mov    %esp,%ebp
+
+   0x08048457 <+3>:     sub    $0x8,%esp
+   0x0804845a <+6>:     and    $0xfffffff0,%esp
+   0x0804845d <+9>:     mov    $0x0,%eax
+   0x08048462 <+14>:    sub    %eax,%esp
+   0x08048464 <+16>:    sub    $0xc,%esp
+
+   0x08048467 <+19>:    push   $0x64
+   0x08048469 <+21>:    call   0x8048344 <malloc@plt>
+   - 패스워드 입력해야해서 64만큼 push
+   0x0804846e <+26>:    add    $0x10,%esp
+   0x08048471 <+29>:    mov    %eax,-0x4(%ebp)
+   0x08048474 <+32>:    sub    $0xc,%esp
+   0x08048477 <+35>:    push   $0x80485c0
+   0x0804847c <+40>:    call   0x8048384 <printf@plt>
+   - "insert The Password: " 스택에 push , printf 함수를 호출
+
+   0x08048481 <+45>:    add    $0x10,%esp
+   0x08048484 <+48>:    sub    $0x4,%esp
+   0x08048487 <+51>:    pushl  0x8049744
+   0x0804848d <+57>:    push   $0x64
+   0x0804848f <+59>:    pushl  -0x4(%ebp)
+   0x08048492 <+62>:    call   0x8048354 <fgets@plt>
+   - 'stdin',0x64(100Byte), ebp-4를 스택에 push , fgets 함수를 호출
+
+   0x08048497 <+67>:    add    $0x10,%esp
+   0x0804849a <+70>:    sub    $0x4,%esp
+   0x0804849d <+73>:    push   $0x4
+   0x0804849f <+75>:    push   $0x80485d7
+   - 패스워드 여기에잇다.
+   0x080484a4 <+80>:    pushl  -0x4(%ebp)
+   0x080484a7 <+83>:    call   0x8048364 <strncmp@plt>
+   - 0x4, "mate", ebp-4를 스택에 push , strncmp 함수를 호출
+
+   0x080484ac <+88>:    add    $0x10,%esp
+   0x080484af <+91>:    test   %eax,%eax
+   0x080484b1 <+93>:    jne    0x80484cd <main+121>
+   - eax와 eax를 and 연산을 실시하여 '0'인지 확인
+
+        '0'이면, 다음 코드 진행
+        '0'이 아니라면, 0x80484cd <main+121> 으로 점프
+
+   0x080484b3 <+95>:    sub    $0xc,%esp
+   0x080484b6 <+98>:    push   $0x80485e0
+   0x080484bb <+103>:   call   0x8048384 <printf@plt>
+   - "\n ~~~~~~~~~~~~ break the world"를 스택에 push , printf 함수 호출
+   0x080484c0 <+108>:   add    $0x10,%esp
+   0x080484c3 <+111>:   sub    $0xc,%esp
+   0x080484c6 <+114>:   push   $0x0
+   0x080484c8 <+116>:   call   0x8048394 <exit@plt>
+   
+   0x080484cd <+121>:   sub    $0xc,%esp
+   0x080484d0 <+124>:   push   $0x8048617
+   0x080484d5 <+129>:   call   0x8048334 <system@plt>
+   - "cat /bin/wrong.txt"를 스택에 push , system 함수를 호출
+   - "--_--_- --____- ---_-__ --___-_-"
+
+   0x080484da <+134>:   add    $0x10,%esp
+   0x080484dd <+137>:   leave
+   0x080484de <+138>:   ret

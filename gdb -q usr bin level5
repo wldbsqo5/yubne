@@ -1,0 +1,56 @@
+[root@ftz root]# gdb -q /usr/bin/level5
+
+(gdb) disas main
+
+   0x0804842c <+0>:     push   %ebp
+   0x0804842d <+1>:     mov    %esp,%ebp
+   - 함수 프롤로그
+
+   0x0804842f <+3>:     sub    $0x8,%esp
+   0x08048432 <+6>:     and    $0xfffffff0,%esp
+   0x08048435 <+9>:     mov    $0x0,%eax
+   0x0804843a <+14>:    sub    %eax,%esp
+   0x0804843c <+16>:    sub    $0x8,%esp
+   0x0804843f <+19>:    push   $0x180
+   0x08048444 <+24>:    push   $0x8048580
+   0x08048449 <+29>:    call   0x804832c <creat@plt>
+
+   0x0804844e <+34>:    add    $0x10,%esp
+   0x08048451 <+37>:    mov    %eax,-0x4(%ebp)
+   0x08048454 <+40>:    cmpl   $0x0,-0x4(%ebp)
+   0x08048458 <+44>:    jns    0x8048484 <main+88>
+   0x0804845a <+46>:    sub    $0xc,%esp
+   0x0804845d <+49>:    push   $0x80485a0
+   0x08048462 <+54>:    call   0x804835c <printf@plt>
+
+   0x08048467 <+59>:    add    $0x10,%esp
+   0x0804846a <+62>:    sub    $0xc,%esp
+   0x0804846d <+65>:    push   $0x8048580
+   0x08048472 <+70>:    call   0x804833c <remove@plt>
+
+   0x08048477 <+75>:    add    $0x10,%esp
+   0x0804847a <+78>:    sub    $0xc,%esp
+   0x0804847d <+81>:    push   $0x0
+   0x0804847f <+83>:    call   0x804836c <exit@plt>
+
+   0x08048484 <+88>:    sub    $0x4,%esp
+   0x08048487 <+91>:    push   $0x1f
+   0x08048489 <+93>:    push   $0x80485e0
+   - 여기에 암호가 잇다.
+
+   0x0804848e <+98>:    pushl  -0x4(%ebp)
+   0x08048491 <+101>:   call   0x804830c <write@plt>
+
+   0x08048496 <+106>:   add    $0x10,%esp
+   0x08048499 <+109>:   sub    $0xc,%esp
+   0x0804849c <+112>:   pushl  -0x4(%ebp)
+   0x0804849f <+115>:   call   0x804831c <close@plt>
+
+   0x080484a4 <+120>:   add    $0x10,%esp
+   0x080484a7 <+123>:   sub    $0xc,%esp
+   0x080484aa <+126>:   push   $0x8048580
+   0x080484af <+131>:   call   0x804833c <remove@plt>
+
+   0x080484b4 <+136>:   add    $0x10,%esp
+   0x080484b7 <+139>:   leave
+   0x080484b8 <+140>:   ret
