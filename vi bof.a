@@ -1,0 +1,94 @@
+  .file   "bof.c"
+  .section        .rodata
+  .LC0:
+  .string "It can be overflow : "
+  .LC1:
+  .string "buf=0x%x,buf2=0x%x\n"
+  .LC2:
+  .string "go"
+  .LC3:
+  .string "Good Skill!\n"
+  .LC4:
+  .string "/bin/bash"
+  .text
+
+  .globl main
+  .type   main,@function
+  main:
+  pushl   %ebp
+  movl    %esp, %ebp
+
+  subl    $40, %esp
+  - 변수를 설정할 수 있도록 스택에 40byte 만큼 공간 확보
+
+  andl    $-16, %esp
+  movl    $0, %eax
+  subl    %eax, %esp
+
+  subl    $12, %esp
+  - 변수를 설정할 수 있도록 스택에 12byte 만큼 공간 확보
+  pushl   $.LC0
+  call    printf
+  - 스택에 "It can be overflow : "를 Push 하고, printf 함수를 호출
+
+  addl    $16, %esp
+   - 스택 공간을 현재 esp에서 16byte 만큼 제거
+
+  subl    $4, %esp
+   - 변수를 설정할 수 있도록 스택에 4byte 만큼 공간을 확보
+
+  pushl   stdin
+   - 스택에 'stdin'를 Push
+
+  pushl   $40
+   - 스택에 '40'를 Push
+
+  leal    -40(%ebp), %eax
+   - [ebp-40]에 위치한 주소 값을 eax에 대입
+   - 이때, ebp-40은 buf 주소이다.
+
+  pushl   %eax
+   - 스택에 eax를 Push
+
+  call    fgets
+   - fgets 함수 호출
+
+  addl    $16, %esp
+  subl    $4, %esp
+  leal    -24(%ebp), %eax
+  pushl   %eax
+  leal    -40(%ebp), %eax
+  pushl   %eax
+  pushl   $.LC1
+  call    printf
+
+  addl    $16, %esp
+  subl    $4, %esp
+  pushl   $2
+  pushl   $.LC2
+  leal    -24(%ebp), %eax
+  pushl   %eax
+  call    strncmp
+
+  addl    $16, %esp
+  testl   %eax, %eax
+  jne     .L2
+  - eax와 eax를 and 연산을 실시하여 둘다 '0'인지를 확인
+      비교값이 '0' 이면, 다음 코드 진행
+      비교값이 '0'이 아니라면, 점프 실시
+
+  subl    $12, %esp
+  pushl   $.LC3
+  call    printf
+  .LC3:
+  .string "Good Skill!\n"
+
+  addl    $16, %esp
+  subl    $8, %esp
+  pushl   $3010
+  pushl   $3010
+  call    setreuid
+
+  addl    $16, %esp
+  subl    $12, %esp
+  pushl   $.LC4

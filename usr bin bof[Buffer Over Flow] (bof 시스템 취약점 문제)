@@ -4,17 +4,19 @@
 
 main(){
 
-  char buf2[10];
-  char buf[10];
+  char buf2[10];	// buf2 변수 선언 및 배열 크기 10byte
+  char buf[10];	// buf 변수 선은 및 배열 크기 10byte
 
   printf("It can be overflow : ");
-  fgets(buf,40,stdin);
-
-  if ( strncmp(buf2, "go", 2) == 0 )
+  fgets(buf,40,stdin);		// fgets 함수를 이용하여 buf 변수에 40byte 입력 받겠다.
+  printf("buf=0x%x,buf2=0x%x\n,buf,buf2");  거리추가를 위해 넣은것.
+  if ( strncmp(buf2, "go", 2) == 0 )	//buf2 문자열이 2글자이면서 'go' 인 경우, if 문 수행
    {
         printf("Good Skill!\n");
-        setreuid( 3010, 3010 );
-        system("/bin/bash");
-   }
+        setreuid( 3010, 3010 );		// 다음 레벨 UID/GID
+        system("/bin/bash");		// system 함수를 이용하여 다름 레벨 bash 쉘 실행
 
-}
+        }
+
+
+2) vi bof.c 제작

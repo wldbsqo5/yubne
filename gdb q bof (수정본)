@@ -1,0 +1,192 @@
+
+
+  [level9@ftz tmp]$ gdb -q bof
+
+  0x08048420 <+0>:     push   %ebp
+  0x08048421 <+1>:     mov    %esp,%ebp
+- 함수 프롤로그
+
+  0x08048423 <+3>:     sub    $0x28,%esp
+- esp에서 0x28(40byte)만큼 공간을 확보한다.
+
+  0x08048426 <+6>:     and    $0xfffffff0,%esp
+  0x08048429 <+9>:     mov    $0x0,%eax
+  0x0804842e <+14>:    sub    %eax,%esp
+
+  0x08048430 <+16>:    sub    $0xc,%esp
+- esp에서 0xc(12byte) 만큼 공간을 확보한다.
+
+  0x08048433 <+19>:    push   $0x804856c
+  0x08048438 <+24>:    call   0x8048350 <printf@plt>
+- '0x804856c'에 있는 값을 스택에 Push하고 printf 함수를 호출한다.
+- 0x804856c:       "It can be overflow : "
+
+  0x0804843d <+29>:    add    $0x10,%esp
+- esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+  0x08048440 <+32>:    sub    $0x4,%esp
+- esp에서 0x4(4byte) 만큼 공간을 확보한다.
+
+  0x08048443 <+35>:    pushl  0x80496c8
+- '0x80496c8'에 있는 값을 스택에 Push 한다.
+- 0x80496c8 <stdin@@GLIBC_2.0>:    ""
+
+  0x08048449 <+41>:    push   $0x28
+- 0x28(40)을 스택에 Push 한다.
+
+  0x0804844b <+43>:    lea    -0x28(%ebp),%eax
+- [ebp-28]에 위치한 주소 값을 eax에 대입한다.
+- 즉, [ebp-28]에 위치한 주소는 buf의 주소이다.
+
+  0x0804844e <+46>:    push   %eax
+- eax 값을 스택에 Push 한다.
+
+  0x0804844f <+47>:    call   0x8048320 <fgets@plt>
+- fgets 함수를 호출한다.
+
+  0x08048454 <+52>:    add    $0x10,%esp
+- esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+  0x08048457 <+55>:    sub    $0x4,%esp
+- esp에서 0x4(4byte) 만큼 공간을 확보한다.
+
+  0x0804845a <+58>:    lea    -0x18(%ebp),%eax
+- [esp-18]에 위치한 주소 값을 eax에 대입한다.
+- 즉, [ebp-18]에 위치한 주소는 buf2의 주소이다.
+
+  0x0804845d <+61>:    push   %eax
+- eax를 스택에 Push 한다.
+
+  0x0804845e <+62>:    lea    -0x28(%ebp),%eax
+- [esp-28]에 위치한 주소 값을 eax에 대입한다.
+
+  0x08048461 <+65>:    push   %eax
+- eax를 스택에 Push 한다.
+
+  0x08048462 <+66>:    push   $0x8048582
+- '0x8048582'에 있는 값을 스택에 Push 한다.
+- 0x8048582:       "buf=0x%x, buf2=0x%x\n"
+
+  0x08048467 <+71>:    call   0x8048350 <printf@plt>
+- printf 함수를 호출한다.
+
+  0x0804846c <+76>:    add    $0x10,%esp
+- esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+  0x0804846f <+79>:    sub    $0x4,%esp
+- esp에서 0x4(4byte) 만큼 공간을 확보한다.
+
+  0x08048472 <+82>:    push   $0x2
+- 0x2(2)를 스택에 Push 한다.
+
+  0x08048474 <+84>:    push   $0x8048597
+- '0x8048597'에 있는 값을 스택에 Push 한다.
+- 0x8048597:       "go"
+
+  0x08048479 <+89>:    lea    -0x18(%ebp),%eax
+- [esp-18]에 위치한 주소 값을 eax에 대입한다.
+- 즉, [ebp-18]에 위치한 주소는 buf2의 주소이다.
+
+  0x0804847c <+92>:    push   %eax
+- eax를 스택에 Push 한다.
+
+  0x0804847d <+93>:    call   0x8048330 <strncmp@plt>
+- strncmp 함수를 호출한다.
+
+  0x08048482 <+98>:    add    $0x10,%esp
+- esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+  0x08048485 <+101>:   test   %eax,%eax
+  0x08048487 <+103>:   jne    0x80484be <main+158>
+- eax와 eax를 AND 연산을 실시하여 두 값이 '0'인지 비교한다.
+
+ 비교 결과 값이 '0'이면, 다음 코드를 진행한다.
+ 비교 결과 값이 '0'이 아니라면, '0x80484be <main+158>'로 점프
+
+  0x08048489 <+105>:   sub    $0xc,%esp
+- esp에서 0xc(12byte) 만큼 공간을 확보한다.
+
+  0x0804848c <+108>:   push   $0x804859a
+- '0x804859a'에 있는 값을 스택에 Push 한다.
+- 0x804859a:       "Good Skill!\n"
+
+  0x08048491 <+113>:   call   0x8048350 <printf@plt>
+- printf 함수를 호출한다.
+
+  0x08048496 <+118>:   add    $0x10,%esp
+- esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+  0x08048499 <+121>:   sub    $0x8,%esp
+- esp에서 0x8(8byte) 만큼 공간을 확보한다.
+
+  0x0804849c <+124>:   push   $0xbc2
+- 3010을 스택에 Push 한다.
+
+  0x080484a1 <+129>:   push   $0xbc2
+- 3010을 스택에 Push 한다.
+
+  0x080484a6 <+134>:   call   0x8048360 <setreuid@plt>
+- setreuid 함수를 호출한다.
+
+  0x080484ab <+139>:   add    $0x10,%esp
+- esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+  0x080484ae <+142>:   sub    $0xc,%esp
+- esp에서 0xc(12byte) 만큼 공간을 확보한다.
+
+  0x080484b1 <+145>:   push   $0x80485a7
+- '0x80485a7'에 있는 값을 스택에 Push 한다.
+- 0x80485a7:       "/bin/bash"
+
+  0x080484b6 <+150>:   call   0x8048310 <system@plt>
+- system 함수를 호출한다.
+
+  0x080484bb <+155>:   add    $0x10,%esp
+- esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+  0x080484be <+158>:   leave
+  0x080484bf <+159>:   ret
+- 함수 에필로그
+
+End of assembler dump.
+(gdb)
+(gdb) quit
+[level9@ftz tmp]$
+
+
+5)  'bof' 파일 스택 프레임
+
+- buf 주소	ebp-28(40byte)
+- buf2 주소 	ebp-18(24byte)
+
+[낮은 주소]
+   buf	10byte	a x 10
+   dummy	6byte	a x 6
+   buf2	10byte	go
+   dummy	14byte
+   SFP
+   RET
+[높은 주소]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[낮은 주소]
+   buf	10byte
+   dummy	6byte
+   buf2	10byte
+   dummy	14byte
+   SFP	4byte
+   RET	4byte
+[높은 주소]
