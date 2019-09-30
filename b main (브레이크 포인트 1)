@@ -1,0 +1,29 @@
+(gdb) b * main
+Breakpoint 1 at 0x80482f4
+(gdb) run
+Starting program: /home/level9/tmp/stack
+
+Breakpoint 1, 0x080482f4 in main ()
+(gdb) info reg
+eax            0x1      1
+ecx            0x42015554       1107383636
+edx            0x40016bc8       1073834952
+ebx            0x42130a14       1108544020
+esp            0xbfffe95c       0xbfffe95c
+ebp            0xbfffe978       0xbfffe978
+esi            0x40015360       1073828704
+edi            0x804833c        134513468
+eip            0x80482f4        0x80482f4 <main>
+eflags         0x246    [ PF ZF IF ]
+cs             0x23     35
+ss             0x2b     43
+ds             0x2b     43
+es             0x2b     43
+fs             0x0      0
+gs             0x33     51
+
+
+(gdb) x/12x $esp
+0xbfffe95c:     0x42015574      0x00000001      0xbfffe9a4      0xbfffe9ac
+0xbfffe96c:     0x4001582c      0x00000001      0x08048244      0x00000000
+0xbfffe97c:     0x08048265      0x080482f4      0x00000001      0xbfffe9a4

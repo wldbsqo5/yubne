@@ -1,0 +1,29 @@
+(gdb) disas main
+
+   0x080482f4 <+0>:     push   %ebp
+   0x080482f5 <+1>:     mov    %esp,%ebp
+   0x080482f7 <+3>:     sub    $0x28,%esp
+   0x080482fa <+6>:     and    $0xfffffff0,%esp
+=> 0x080482fd <+9>:     mov    $0x0,%eax
+   0x08048302 <+14>:    sub    %eax,%esp
+   0x08048304 <+16>:    mov    $0x0,%eax
+   0x08048309 <+21>:    leave
+   0x0804830a <+22>:    ret
+
+(gdb) info reg
+eax            0x1      1
+ecx            0x42015554       1107383636
+edx            0x40016bc8       1073834952
+ebx            0x42130a14       1108544020
+esp            0xbfffe930       0xbfffe930
+ebp            0xbfffe958       0xbfffe958
+esi            0x40015360       1073828704
+edi            0x804833c        134513468
+eip            0x80482fd        0x80482fd <main+9>
+eflags         0x386    [ PF SF TF IF ]
+cs             0x23     35
+ss             0x2b     43
+ds             0x2b     43
+es             0x2b     43
+fs             0x0      0
+gs             0x33     51
