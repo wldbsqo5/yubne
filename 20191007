@@ -25,6 +25,8 @@
      kill(0,11);
      }
   }
+
+
   1. [참고] gdb 분석 할때
   - 함수 프롤로그 이후에 확보되는 공간이 몇 바이트인지 볼것(확인)
   - 사용하는 함수 유형 및 개수 볼것(확인)
@@ -106,7 +108,7 @@
 
 
 
-level14 =  what that nigga want
+level14 =  what that nigga want?
 
 
 
@@ -155,3 +157,81 @@ level14 =  what that nigga want
   .L3:
           leave
           ret
+
+
+
+level 14 'attackme' gdb 분석
+
+[level14@ftz tmp]$ gdb -q attackme
+
+(gdb) disas main
+
+   0x08048490 <+0>:     push   %ebp
+   0x08048491 <+1>:     mov    %esp,%ebp
+   - 함수 프롤로그
+
+   0x08048493 <+3>:     sub    $0x38,%esp
+   - 스택(esp)에 56byte 공간 확보
+
+   0x08048496 <+6>:     sub    $0x4,%esp
+   - 스택에 4byte 공간 확보
+
+   0x08048499 <+9>:     pushl  0x8049664
+   0x0804849f <+15>:    push   $0x2d
+
+   0x080484a1 <+17>:    lea    -0x38(%ebp),%eax
+   - [ebp-0x38] 주소 값을 eax에 대입한다.
+   - [ebp-0x38]는 buf의 시작 주소이다.
+
+   0x080484a4 <+20>:    push   %eax
+   0x080484a5 <+21>:    call   0x8048360 <fgets@plt>
+   - 0x8048360 <fgets@plt> 호출
+
+   0x080484aa <+26>:    add    $0x10,%esp
+   - esp에서 16byte 만큼 공간 제거
+
+   0x080484ad <+29>:    cmpl   $0xdeadbeef,-0x10(%ebp)
+   0x080484b4 <+36>:    jne    0x80484db <main+75>
+   -
+
+   0x080484b6 <+38>:    sub    $0x8,%esp
+   - 스택에 8byte 공간 확보
+
+   0x080484b9 <+41>:    push   $0xc17
+   0x080484be <+46>:    push   $0xc17
+
+   0x080484c3 <+51>:    call   0x8048380 <setreuid@plt>
+   - 0x8048380 <setreuid@plt> 호출
+
+   0x080484c8 <+56>:    add    $0x10,%esp
+   - esp에서 16byte 만큼 공간 제거
+
+   0x080484cb <+59>:    sub    $0xc,%esp
+   - 스택에 12byte 공간 확보
+
+   0x080484ce <+62>:    push   $0x8048548
+   0x080484d3 <+67>:    call   0x8048340 <system@plt>
+   - 0x8048340 <system@plt> 호출
+
+   0x080484d8 <+72>:    add    $0x10,%esp
+   - esp에서 16byte 공간 제거
+
+   0x080484db <+75>:    leave
+   0x080484dc <+76>:    ret
+   - 함수 에필로그
+
+
+      gdb 분석하고 스택 구조 그림
+    [낮은 주소]
+            buf   56     a* 56개
+            dummy byte   a* 12개
+            i     4byte    <- 0x1234567
+            dummy 8byte    a* 8개
+            SFP   4byte    a* 4개
+            ret   4byte    <- system 함수 주소 값
+            argc  4byte    a* 4개
+            argv  4byte    <- /bin/sh 주소 값
+
+
+
+    [높은 주소]
