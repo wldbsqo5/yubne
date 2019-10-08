@@ -1,0 +1,228 @@
+[level18@ftz level18]$ cp attackme tmp
+[level18@ftz level18]$ cd tmp
+[level18@ftz tmp]$ gdb -q attackme
+
+(gdb) disas main
+
+   0x08048550 <+0>:     push   %ebp
+   0x08048551 <+1>:     mov    %esp,%ebp
+   - 함수 프롤로그
+
+   0x08048553 <+3>:     sub    $0x100,%esp
+   - 스택(esp)에 256byte 만큼 공간 확보
+
+   0x08048559 <+9>:     push   %edi
+   0x0804855a <+10>:    push   %esi
+   0x0804855b <+11>:    push   %ebx
+
+   0x0804855c <+12>:    movl   $0x0,-0x6c(%ebp)
+   - [ebp-0x6c]
+
+   0x08048563 <+19>:    movl   $0x0,-0x70(%ebp)
+   - [ebp-0x70]
+
+   0x0804856a <+26>:    push   $0x8048800
+   - 0x8048800:       "Enter your command: "
+
+   0x0804856f <+31>:    call   0x8048470 <printf@plt>
+   - '0x8048470' <printf@plt>
+
+   0x08048574 <+36>:    add    $0x4,%esp
+   - esp에 4byte 만큼 공간 제거
+
+   0x08048577 <+39>:    mov    0x804993c,%eax
+   - 0x804993c <stdout@@GLIBC_2.0>:   ""
+
+   0x0804857c <+44>:    mov    %eax,-0xfc(%ebp)
+   - [ebp-0xfc]
+
+   0x08048582 <+50>:    mov    -0xfc(%ebp),%ecx
+   - [ebp-0xfc]
+
+   0x08048588 <+56>:    push   %ecx
+   - ecx
+
+   0x08048589 <+57>:    call   0x8048430 <fflush@plt>
+   - 0x8048430 <fflush@plt>
+
+   0x0804858e <+62>:    add    $0x4,%esp
+   - esp에 4byte 만큼 공간 제거
+
+   0x08048591 <+65>:    jmp    0x8048598 <main+72>
+   0x08048593 <+67>:    jmp    0x8048775 <main+549>
+   - 비교 결과 값과 관계 없이 무조건 해당 주소로 점프한다.
+   -
+
+   0x08048598 <+72>:    cmpl   $0x63,-0x70(%ebp)
+   0x0804859c <+76>:    jle    0x80485ab <main+91>
+   - 0x63(99)와 [ebp-0x70]값이랑 비교
+   - [ebp-0x70]은 count 시작 주소이다
+
+      0x63 >= [ebp-0x70]인 경우, 0x80485ab <main+91>으로 점프 실시
+      0x63 >= [ebp-0x70]가 아닌 경우, 다음 코드를 진행
+
+   0x0804859e <+78>:    push   $0x8048815
+   0x080485a3 <+83>:    call   0x8048470 <printf@plt>
+
+   0x080485a8 <+88>:    add    $0x4,%esp
+
+
+   0x080485ab <+91>:    cmpl   $0xdeadbeef,-0x68(%ebp)
+   0x080485b2 <+98>:    jne    0x80485c0 <main+112>
+
+   0x080485b4 <+100>:   call   0x8048780 <shellout>
+   0x080485b9 <+105>:   jmp    0x8048770 <main+544>
+
+   0x080485be <+110>:   mov    %esi,%esi
+
+   0x080485c0 <+112>:   lea    -0xf0(%ebp),%edi
+
+   0x080485c6 <+118>:   mov    %edi,-0xfc(%ebp)
+   0x080485cc <+124>:   mov    $0x20,%ecx
+   0x080485d1 <+129>:   mov    -0xfc(%ebp),%edi
+
+   0x080485d7 <+135>:   xor    %eax,%eax
+
+   0x080485d9 <+137>:   cld
+
+   0x080485da <+138>:   rep stos %eax,%es:(%edi)
+
+   0x080485dc <+140>:   mov    %ecx,-0xf4(%ebp)
+   0x080485e2 <+146>:   mov    %edi,-0xf8(%ebp)
+   0x080485e8 <+152>:   jmp    0x80485f2 <main+162>
+   0x080485ea <+154>:   lea    0x0(%esi),%esi
+   0x080485f0 <+160>:   jmp    0x80485c0 <main+112>
+   0x080485f2 <+162>:   xor    %eax,%eax
+   0x080485f4 <+164>:   bts    %eax,-0xf0(%ebp)
+   0x080485fb <+171>:   push   $0x0
+   0x080485fd <+173>:   push   $0x0
+   0x080485ff <+175>:   push   $0x0
+   0x08048601 <+177>:   lea    -0xf0(%ebp),%ecx
+   0x08048607 <+183>:   mov    %ecx,-0xfc(%ebp)
+   0x0804860d <+189>:   mov    -0xfc(%ebp),%edi
+   0x08048613 <+195>:   push   %edi
+   0x08048614 <+196>:   push   $0x400
+   0x08048619 <+201>:   call   0x8048440 <select@plt>
+   0x0804861e <+206>:   add    $0x14,%esp
+   0x08048621 <+209>:   mov    %eax,-0xfc(%ebp)
+   0x08048627 <+215>:   cmpl   $0x0,-0xfc(%ebp)
+   0x0804862e <+222>:   jle    0x8048770 <main+544>
+   0x08048634 <+228>:   mov    0x8049940,%eax
+   0x08048639 <+233>:   mov    %eax,-0xfc(%ebp)
+   0x0804863f <+239>:   mov    -0xfc(%ebp),%ecx
+   0x08048645 <+245>:   push   %ecx
+
+   0x08048646 <+246>:   call   0x8048420 <fileno@plt>
+   0x0804864b <+251>:   add    $0x4,%esp
+   0x0804864e <+254>:   mov    %eax,-0xfc(%ebp)
+   0x08048654 <+260>:   mov    -0xfc(%ebp),%esi
+   0x0804865a <+266>:   and    $0x1f,%esi
+   0x0804865d <+269>:   mov    0x8049940,%edi
+   0x08048663 <+275>:   mov    %edi,-0xfc(%ebp)
+   0x08048669 <+281>:   mov    -0xfc(%ebp),%eax
+   0x0804866f <+287>:   push   %eax
+   0x08048670 <+288>:   call   0x8048420 <fileno@plt>
+   0x08048675 <+293>:   add    $0x4,%esp
+   0x08048678 <+296>:   mov    %eax,-0xfc(%ebp)
+   0x0804867e <+302>:   mov    -0xfc(%ebp),%edx
+   0x08048684 <+308>:   shr    $0x5,%edx
+   0x08048687 <+311>:   lea    0x0(,%edx,4),%ecx
+   0x0804868e <+318>:   mov    %ecx,-0xfc(%ebp)
+   0x08048694 <+324>:   lea    -0xf0(%ebp),%edx
+   0x0804869a <+330>:   mov    -0xfc(%ebp),%edi
+   0x080486a0 <+336>:   bt     %esi,(%edi,%edx,1)
+   0x080486a4 <+340>:   setb   %bl
+   0x080486a7 <+343>:   test   %bl,%bl
+   0x080486a9 <+345>:   je     0x8048770 <main+544>
+   0x080486af <+351>:   push   $0x1
+   0x080486b1 <+353>:   lea    -0x6c(%ebp),%eax
+   0x080486b4 <+356>:   mov    %eax,-0xfc(%ebp)
+   0x080486ba <+362>:   mov    -0xfc(%ebp),%ecx
+   0x080486c0 <+368>:   push   %ecx
+   0x080486c1 <+369>:   mov    0x8049940,%edi
+   0x080486c7 <+375>:   mov    %edi,-0xfc(%ebp)
+   0x080486cd <+381>:   mov    -0xfc(%ebp),%eax
+   0x080486d3 <+387>:   push   %eax
+   0x080486d4 <+388>:   call   0x8048420 <fileno@plt>
+   0x080486d9 <+393>:   add    $0x4,%esp
+   0x080486dc <+396>:   mov    %eax,-0xfc(%ebp)
+   0x080486e2 <+402>:   mov    -0xfc(%ebp),%ecx
+   0x080486e8 <+408>:   push   %ecx
+   0x080486e9 <+409>:   call   0x8048490 <read@plt>
+   0x080486ee <+414>:   add    $0xc,%esp
+   0x080486f1 <+417>:   mov    -0x6c(%ebp),%edi
+   0x080486f4 <+420>:   mov    %edi,-0xfc(%ebp)
+
+   0x080486fa <+426>:   cmpl   $0xa,-0xfc(%ebp)
+   0x08048701 <+433>:   je     0x8048722 <main+466>
+   - '0xa'와 [ebp-0xfc]에 있는 값을 비교
+   - [ebp-0xfc]는 x 시작 주소이다
+      비교연산 결과값이 '0'인 경우, 0x8048722 <main+466> 점프
+      비교연산 결과값이 '0'이 아닌경우, 다음 코드가 진행됨
+
+
+   0x08048703 <+435>:   cmpl   $0xa,-0xfc(%ebp)
+   0x0804870a <+442>:   jg     0x8048717 <main+455>
+
+   0x0804870c <+444>:   cmpl   $0x8,-0xfc(%ebp)
+   0x08048713 <+451>:   je     0x8048731 <main+481>
+   - '0x8'와 [ebp-0xfc]에 있는 값을 비교
+   - [ebp-0xfc]는 x 시작 주소이다
+      비교연산 결과값이 '0'인 경우, 0x8048731 <main+481> 점프
+      비교연산 결과값이 '0'이 아닌경우, 다음 코드가 진행됨
+
+   0x08048715 <+453>:   jmp    0x8048743 <main+499>  <-- defalut 부분
+   0x08048717 <+455>:   cmpl   $0xd,-0xfc(%ebp)
+
+   0x0804871e <+462>:   je     0x8048722 <main+466>
+   0x08048720 <+464>:   jmp    0x8048743 <main+499>
+   0x08048722 <+466>:   push   $0x8048831
+   0x08048727 <+471>:   call   0x8048470 <printf@plt>
+   0x0804872c <+476>:   add    $0x4,%esp
+   0x0804872f <+479>:   jmp    0x8048770 <main+544>
+   0x08048731 <+481>:   decl   -0x70(%ebp)
+   0x08048734 <+484>:   push   $0x8048833
+   0x08048739 <+489>:   call   0x8048470 <printf@plt>
+   0x0804873e <+494>:   add    $0x4,%esp
+   0x08048741 <+497>:   jmp    0x8048770 <main+544>
+   0x08048743 <+499>:   lea    -0x64(%ebp),%eax
+   - [ebp-0x64] 주소값을 eax에 대입한다.
+   - 이때, [ebp-0x64]는 string 의 시작주소이다.
+
+   0x08048746 <+502>:   mov    %eax,-0xfc(%ebp)
+
+   0x0804874c <+508>:   mov    -0x70(%ebp),%edx
+   0x0804874f <+511>:   mov    -0x6c(%ebp),%cl
+   0x08048752 <+514>:   mov    %cl,-0xfd(%ebp)
+   0x08048758 <+520>:   mov    -0xfd(%ebp),%al
+   0x0804875e <+526>:   mov    -0xfc(%ebp),%ecx
+   0x08048764 <+532>:   mov    %al,(%edx,%ecx,1)
+   0x08048767 <+535>:   incl   -0x70(%ebp)
+   0x0804876a <+538>:   jmp    0x8048770 <main+544>
+   0x0804876c <+540>:   lea    0x0(%esi,%eiz,1),%esi
+   0x08048770 <+544>:   jmp    0x8048591 <main+65>
+   0x08048775 <+549>:   lea    -0x10c(%ebp),%esp
+   0x0804877b <+555>:   pop    %ebx
+   0x0804877c <+556>:   pop    %esi
+   0x0804877d <+557>:   pop    %edi
+
+   0x0804877e <+558>:   leave
+   0x0804877f <+559>:   ret
+   - 함수 에필로그
+
+
+스택 구조   [참고] 이거할때 c언어 코드를 보고 미리 어떤 타이틀(count chech string)들을 미리 알아두면 편하겟다.
+[낮은 주소]
+(총 256byte)
+               fds     4
+          (252)x       4
+               dummy   136
+          (112)count   4
+               dummy   4
+          (104)check   4   <- deadbeef
+          (100)string  100
+               sfp     4
+               ret     4
+
+          (dummy 140 byte)
+[높은 주소]

