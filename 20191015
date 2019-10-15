@@ -38,10 +38,34 @@ sudo vi /etc/network/interfaces
      A10	검증되지 않는 리다이렉트 및 포워드
 
 
-     1. 인젝션 (injection)
+     1. 인젝션 (injection) (url 에 입력한값이 ++되서 들어간다. head 부분에 적용된다)
      - 악의적인 명령을 삽입하는 웹 취약점
      - 서버로 전송되는 요청 정보에 악의적인 명령을 강제로 삽입(주사)하여 불필요한 동작을 실시하게 만들거나
        서버/시스템/db 정보를 획득할 수 있는 취약점
      - ex ) HTML 익젝션, SQL 인젝션, PHP 인젝션, XML 인젝션
 
-     
+     2. HTML
+     - 웹-서버에 저장된 문서를 클라이언트에게 전송하여 클라이언트 브라우저에서 표현해주는 프로그래밍 언어
+
+     HTML Injection - Reflected (GET) =  html <h1>이런거 대입해서 공격하는 것
+
+     mitn = 맨인더 미러
+
+     ex ) GET /bWAPP/htmli_get.php?firstname=<h1>test1</h1>&lastname=<h2>test2<h2>&form=submit HTTP/1.1
+     https://ascii.cl/htmlcodes.htm
+
+     htmlspecialchars
+     - html 코드에 메타케릭터를 입력하여 다은것을 실행하거나 풀력하는 것을 방지하는 함수
+     - 즉, html 태그를 문자로 처리해주는것
+
+     3. post 방식 ( url 에 절때 입력한값이 들어가지않는다.  body 부분에 적용된다. )
+
+     ex )  firstname=ge&lastname=1e&form=submit
+
+     4. url 방식
+
+     ex ) GET /bWAPP/htmli_current_url.php/<h1>test1</h1> HTTP/1.1
+
+
+     reflected = web 서버가 준게아닌 사용자가 클릭햇을때 잇던 스크립트를 보여주는것.
+     Stored    = web 서버에 스크립트를 넣어놓고 사용자의 어떤 의도대로 하게끔 해주는것.
