@@ -65,7 +65,3 @@ sudo vi /etc/network/interfaces
      4. url 방식
 
      ex ) GET /bWAPP/htmli_current_url.php/<h1>test1</h1> HTTP/1.1
-
-
-     reflected = web 서버가 준게아닌 사용자가 클릭햇을때 잇던 스크립트를 보여주는것.
-     Stored    = web 서버에 스크립트를 넣어놓고 사용자의 어떤 의도대로 하게끔 해주는것.

