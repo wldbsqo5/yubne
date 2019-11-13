@@ -85,3 +85,74 @@ Size of Uninitialized Data	4byte		00 00 00 00	00 00 00 00
 
 	EXE 파일의 Image Base : 0x00400000
 	DLL 파일의 Image Base : 0x01000000 (윈도우즈에서 기본적으로 제공하는 EXE 파일도 해당)
+
+  - SYS 파일 : Kernal Memory 영역(0x80000000 ~ 0xFFFFFFFF)
+
+  *Section Alignment		4byte		00 10 00 00	00 00 10 00
+
+   - 메모리에서 섹션의 최소 단위 : 0x1000(4096byte)
+   - Section Alignment >= File Alignment
+
+  Ex1) .text 섹션의 데이터가 512byte 경우, 섹션 얼라이먼트에 의해서 4096byte 할당
+  Ex2) .data 섹션의 데이터가 6000byte 경우, 섹션 얼라이먼트에 의해서 8192byte 할당
+
+  *Alignment		4byte		00 02 00 00	00 00 02 00
+
+   - 파일에서 섹션의 최소 단위 : 0x200(512byte)
+
+  Major O/S Version		2byte		06 00		00 06
+  Minor O/S Version		2byte		01 00		00 01
+
+   - PE 파일을 실행할때 필요한 운영체제 버전
+
+  Major Image Version	2byte		06 00		00 06
+  Minor Image Version	2byte		01 00		00 01
+
+   - PE 파일 이미지 버전(제작자가 정의 가능한 필드 영역)
+
+  Major Subsystem Version	2byte		06 00		00 06
+  Minor Subsystem Version	2byte		01 00		00 01
+
+   - PE 파일을 실행할때 필요한 서브시스템 버전
+
+  Win32 Version Value	4byte		00 00 00 00	00 00 00 00
+
+  Size of Image		4byte		00 00 0C 00	00 0C 00 00
+
+   - PE 파일이 메모리에 로딩되면, 가상 메모리에서 PE 이미지 크기 : 0xC0000(786432byte)
+
+  Size of Headers		4byte		00 04 00 00	00 00 04 00
+
+   - PE 헤더 전체 크기 : 0x400(1024byte)
+
+  Checksum		4byte		30 BD 0C 00	00 0C BD 30
+
+   - 이미지의 체크섬
+
+  *Subsystem		2byte		02 00		00 02
+
+   - 서브시스템
+   - IMAGE_SUBSYSTEM_NATIVE	1	Device drivers and native Windows processes
+   - IMAGE_SUBSYSTEM_WINDOWS_GUI	2	The Windows graphical user interface (GUI) subsystem
+   - IMAGE_SUBSYSTEM_WINDOWS_CUI	3	The Windows character subsystem
+
+  DLL Characteristic		2byte		40 81		81 40
+
+   - 시스템/메모리 보호 기능 플래그
+   - 0x0040 : IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE (해당 값을 0x0000으로 변경하면 ASLR 기능 해지)
+
+  Size of Stack Reserve	4byte		00 00 04 00	00 04 00 00
+  Size of Stack Commit	4byte		00 20 00 00	00 00 20 00
+  Size of Heap Reserve	4byte		00 00 10 00	00 10 00 00
+  Size of Heap Commit	4byte		00 10 00 00	00 00 10 00
+  Loader Flags		4byte		00 00 00 00	00 00 00 00
+
+  *Number of Data Directories	4byte		10 00 00 00	00 00 00 10
+
+   - Data Directory 배열 구조체 개수 : 0x10(16개)
+
+  *Data Directory		각각 8byte
+
+   - IMAGE_DATA_DIRECTORY 구조체
+   - 각 배열 항목마다 RVA(4byte)와 Size(4byte)로 구성됨
+   
