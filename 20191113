@@ -5,7 +5,7 @@
 
   @ PE 헤더
  - PE 파일에 대한 속성 정보 및 PE 바디 내용에 대한 상세 정보들이 포함되어 있다.
-[참조] e_magic, e_lfanew.png 
+[참조] e_magic, e_lfanew.png
 오프셋(끝)과 시그니처(처음)가 중요
 
 
@@ -18,3 +18,14 @@
    - 248byte
    - 3가지 영역: Signature, IMAGE_FILE_HEADER, IMAGE_OPTIONAL_HEADER
    [참조] IMAGE_NT_HEADERS.png
+
+   1) Signature
+    - 오프셋: 0xD8 ~ 0xDB
+    - 크기: 4byte
+    - 데이터: 00004550(PE)
+    - NT 시그니처
+
+   2) IMAGE_FILE_HEADER
+    - 오프셋: 0xDC ~ 0xEF
+    - 크기: 20byte
+    - CPU 정보, 섹션 개수, 파일 생성 시간, Optional Header 크기,  
