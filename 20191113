@@ -28,4 +28,60 @@
    2) IMAGE_FILE_HEADER
     - 오프셋: 0xDC ~ 0xEF
     - 크기: 20byte
-    - CPU 정보, 섹션 개수, 파일 생성 시간, Optional Header 크기,  
+    - CPU 정보, 섹션 개수, 파일 생성 시간, Optional Header 크기, 파일 특성 정보
+
+    Machine			             2byte		4C 01              --cpu 유형
+    Number of Sections	     2byte		04 00              --pe 파일이 갖고 있는 섹션개수
+    Time Date Stamp		       4byte		9D 97 E7 4C        --pe 파일 생성 시간
+    Pointer to Symbol Table	 4byte		00 00 00 00
+    Number of Symblos	       4byte		00 00 00 00
+    Size of Optional Header	 2byte		E0 00
+    Characteristics		       2byte		02 01
+
+   3) IMAGE_OPTIONAL_HEADER
+    - 오프셋: 0xF0 ~ 0x1CF
+    - 크기 : 224byte
+    - 데이터 : 실행 파일 로드 및 실행에 사용되는 정보
+    - NT 추가 필드: 윈도우 링커/로더가 요구하는 정보
+
+
+*Magic			2byte		0B 01		01 0B
+
+ - IMAGE_OPTIONAL_HEADER 시그니처
+ - 32bit PE : 0x010B
+ - 64bit PE : 0x020B
+
+Major Linker Version	1byte		09		09
+Minor Linker Version	1byte		00		00
+
+*Size of Code		4byte		00 2E 05 00	00 05 2E 00
+
+ - 코드 섹션(.text 섹션)의 크기 : 0x52E00
+
+Size of Initialized Data	4byte		00 A6 06 00	00 06 A6 00
+
+ - 코드 섹션을 제외한 초기화된 데이터 섹션의 크기
+
+Size of Uninitialized Data	4byte		00 00 00 00	00 00 00 00
+
+ - 코드 섹션을 제외한 초기화되지 않은 데이터 섹션의 크기
+
+*Address of Entry Point	4byte		6C 2D 01 00	00 01 2D 6C
+
+ - PE 파일이 메모리에서 시작되는 위치 : 0x12D6C
+
+*Base of Code		4byte		00 10 00 00	00 00 10 00
+
+ - 코드 섹션(.text 섹션)의 RVA 주소 : 0x1000
+
+*Base of Data		4byte		00 20 05 00	00 05 20 00
+
+ - 데이터 섹션(.data 섹션)의 RVA 주소 : 0x52000
+
+*Image Base		4byte		00 00 00 01	01 00 00 00
+
+ - PE 파일을 로드할 가상 메모리의 주소이다.
+ - EXE, DLL 파일 : User Memory 영역(0x00000000 ~ 0x7FFFFFFF)
+
+	EXE 파일의 Image Base : 0x00400000
+	DLL 파일의 Image Base : 0x01000000 (윈도우즈에서 기본적으로 제공하는 EXE 파일도 해당)
