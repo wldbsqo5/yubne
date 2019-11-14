@@ -1,1 +1,22 @@
 틀린부분의 필드가 무엇인지 확인하고, 수정을 실시한다.
+[참조 리버싱 실습_png]
+
+ 1. IMAGE_SECTION_HEADER
+  - 각 섹션에 대한 속성 정보들의 정의되어 있는 구조체이다.
+  - 프로그램의 실제 내용을 담고 있는 영역이며, 여러개의 유형으로 구성된다.
+
+.text                     프로그램 실행 코드 및 IAT(Import Address Table) 정보가 포함된 영역
+.Data                     전역 변수, 정적 변수를 위한 영역, 읽기/쓰기가 가능
+.rdata                    문자열, 상수를 위한 영역, 읽기 가능
+.rsrc                     아이콘, 커서, 추가 바이너리 등의 리소스를 위한 영역
+.reloc                    재배치 정보를 위한 영역
+.idata                    import 할 dll/api 정보를 위한 영역
+.edata                    Export 할 dll/api 정보를 위한 영역
+
+  - 각각의 세션 헤더는 40byte로 구성되어 있으며, 구성요소는 다음과 같다.
+Name                                8byte           섹션이름
+Virtual Size                        4byte           메모리에서 섹션의 크기
+RVA                                 4byte           메모리에서 섹션의 시작 주소
+Size of Raw Data                    4byte           파일에서 섹션의 크기
+Pointer to Raw Data                 4byte           파일에서 섹션의 시작 주소
+Charecteristics                     4byte           속성,권한 정보

@@ -144,8 +144,8 @@ Size of Uninitialized Data	4byte		00 00 00 00	00 00 00 00
   Size of Stack Reserve	4byte		00 00 04 00	00 04 00 00
   Size of Stack Commit	4byte		00 20 00 00	00 00 20 00
   Size of Heap Reserve	4byte		00 00 10 00	00 10 00 00
-  Size of Heap Commit	4byte		00 10 00 00	00 00 10 00
-  Loader Flags		4byte		00 00 00 00	00 00 00 00
+  Size of Heap Commit	4byte		  00 10 00 00	00 00 10 00
+  Loader Flags		4byte		      00 00 00 00	00 00 00 00
 
   *Number of Data Directories	4byte		10 00 00 00	00 00 00 10
 
