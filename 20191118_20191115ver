@@ -1,0 +1,232 @@
+@ PE 파일 분석(RVA to VA)
+
+ - 분석 환경 : Vmware + Windows7(32bit)
+ - 분석 도구 : PEiD, PEview, CFF Explorer, HxD
+ - 분석 파일 : 'calc.exe'
+ - 참조 사이트 : https://docs.microsoft.com/en-us/windows/win32/debug/pe-format
+
+1. ImageBase
+
+ - IMAGE_NT_HEADERS -> IMAGE_OPTIONAL_HEADER
+ - PE 파일을 로드할 가상 메모리의 주소이다.
+ - EXE, DLL 파일 : User Memory 영역(0x00000000 ~ 0x7FFFFFFF)
+
+	EXE 파일의 Image Base : 0x00400000
+	DLL 파일의 Image Base : 0x01000000 (윈도우즈에서 기본적으로 제공하는 EXE 파일도 해당)
+
+ - SYS 파일 : Kernal Memory 영역(0x80000000 ~ 0xFFFFFFFF)
+
+
+2. RVA & VA
+
+ 1) RVA(Relative Virtual Address)
+
+ - PE 파일이 가상 주소 공간 내에서 로드된 이후 이미지의 시작 주소에 대한 상대 주소
+ - PE 시작 주소에서 얼마만큼 떨어져 있는지를 계산/확인할 수 있다.
+ - RVA = VA - ImageBase 주소
+
+ 2) VA(Virtual Address)
+
+ - 가상 메모리 주소 공간에서 프로세스의 절대 주소
+ - VA = RVA + ImageBase 주소
+
+		가상 메모리 주소 공간 ------------------------- 0x00000000 (낮은 주소)
+						|
+						|
+────		────────── -------------------|----- ImageBase
+PE 파일		매핑된 PE 파일		|	|
+────					|(RVA)	|(VA)
+					|	|
+		────────── -------------------------- 0x~~~~~~~ (높은 주소)
+
+Ex) 513호
+
+ - ImageBase	500
+ - RVA		13
+ - VA		513
+
+VA = RVA + ImageBase = 13 + 500 = 513
+RVA = VA - ImageBase = 513 - 500 = 13
+
+
+3. VA를 구하기 위한 요소
+
+Virtual Size		메모리에서 섹션의 크기
+RVA			메모리에서 어떤 정보의 주소
+Size of Raw Data		파일에서 섹션의 크기
+Pointer to Raw Data	파일에서 섹션의 주소
+
+
+4. 각각의 섹션에 대한 RVA to VA 구하기
+
+ 1) .text 섹션 RVA to VA 구하기
+
+ - VA = RVA + ImageBase 주소
+ - .text 섹션 범위 : VA ~ (VA + Virtual Size)
+ - 패딩 = 다음 섹션 VA - 해당 섹션 범위 끝 주소
+
+ImageBase	RVA		Virtual Size	다음 섹션 VA
+0x01000000	0x00001000	0x00052CA1	0x01054000
+
+ VA = 0x00001000 + 0x01000000 = 0x01001000
+ .text 섹션 범위 : 0x01001000 ~ 0x01053CA1
+ 패딩 = 0x01054000 - 0x01053CA1 = 0x0000035F
+
+
+ 2) .data 섹션 RVA to VA 구하기
+
+ - VA = RVA + ImageBase 주소
+ - .data 섹션 범위 : VA ~ (VA + Virtual Size)
+ - 패딩 = 다음 섹션 VA - 해당 섹션 범위 끝 주소
+
+ImageBase	RVA		Virtual Size	다음 섹션 VA
+0x01000000	0x00054000	0x000040C0	0x01059000
+
+ VA = 0x00054000 + 0x01000000 = 0x01054000
+ .data 섹션 범위 : 0x01054000 ~ 0x010580C0
+ 패딩 = 0x01059000 - 0x010580C0 = 0x00000F40
+
+
+ 3) .rsrc 섹션 RVA to VA 구하기
+
+ - VA = RVA + ImageBase 주소
+ - .rsrc 섹션 범위 : VA ~ (VA + Virtual Size)
+ - 패딩 = 다음 섹션 VA - 해당 섹션 범위 끝 주소
+
+ImageBase	RVA		Virtual Size	다음 섹션 VA
+0x01000000	0x00059000	0x00062798	0x010BC000
+
+ VA = 0x00059000 + 0x01000000 = 0x01059000
+ .rsrc 섹션 범위 : 0x01059000 ~ 0x010BB798
+ 패딩 = 0x010BC000 - 0x010BB798 = 0x00000868
+
+ 4) .reloc 섹션 RVA to VA 구하기
+
+ - VA = RVA + ImageBase 주소
+ - .reloc 섹션 범위 : VA ~ (VA + Virtual Size)
+ - 패딩 = 다음 섹션 VA - 해당 섹션 범위 끝 주소
+
+ImageBase	RVA		Virtual Size	.reloc 섹션 끝
+0x01000000	0x000BC000	0x00003B3C	0x010BFFFF
+
+ VA = 0x000BC000 + 0x01000000 = 0x010BC000
+ .reloc 섹션 범위 : 0x010BC000 ~ 0x010BFB3C
+ 패딩 = 0x010BFFFF - 0x010BFB3C = 4C3
+
+
+@ PE 파일 분석(RVA to RAW)
+
+ - 분석 환경 : Vmware + Windows7(32bit)
+ - 분석 도구 : PEiD, PEview, CFF Explorer, HxD
+ - 분석 파일 : 'calc.exe'
+ - 참조 사이트 : https://docs.microsoft.com/en-us/windows/win32/debug/pe-format
+
+1. RAW를 구하기 위한 요소
+
+ - RAW : 파일이 실행되기 이전에 파일의 오프셋(Pointer to Raw Data)
+
+Virtual Size		메모리에서 섹션의 크기
+RVA			메모리에서 어떤 정보의 주소
+Size of Raw Data		파일에서 섹션의 크기
+Pointer to Raw Data	파일에서 섹션의 주소
+
+
+2. RVA to RAW 구하기
+
+ 1) RVA=1000 인 경우, RAW 구하기
+
+ - RAW = RVA - Virtual Address(섹션의 RVA) + Pointer to Raw Data
+
+메모리에서 .text 섹션 범위		0x01001000 ~ 0x01053CA1
+RVA				0x00001000
+Virtual Address(섹션의 RVA)		0x00001000
+Pointer to Raw Data		0x00000400
+파일에서 .text 섹션 범위		0x00000400 ~ 0x00053200 전까지
+
+ - RAW = 0x00001000 - 0x0001000 + 0x00000400 = 0x00000400
+ - RVA가 '1000'인 경우, RAW는 '0x400'이며, 파일에서 .text 섹션의 범위이다.(시작 주소이다.)
+
+
+ 2) RVA=5000 인 경우, RAW 구하기
+
+ - RAW = RVA - Virtual Address(섹션의 RVA) + Pointer to Raw Data
+
+메모리에서 .text 섹션 범위		0x01001000 ~ 0x01053CA1
+RVA				0x00005000
+Virtual Address(섹션의 RVA)		0x00001000
+Pointer to Raw Data		0x00000400
+파일에서 .text 섹션 범위		0x00000400 ~ 0x00053200 전까지
+
+ - RAW = 0x00005000 - 0x00001000 + 0x00000400 = 0x00004400
+ - RVA가 '5000'인 경우, RAW는 '0x4400'이며, 파일에서 .text 섹션의 범위이다.
+
+
+ 3) RVA=57000 인 경우, RAW 구하기
+
+ - RAW = RVA - Virtual Address(섹션의 RVA) + Pointer to Raw Data
+
+메모리에서 .data 섹션 범위		0x01054000 ~ 0x010580C0
+RVA				0x00057000
+Virtual Address(섹션의 RVA)		0x00054000
+Pointer to Raw Data		0x00053200
+파일에서 .data 섹션 범위		0x00053200 ~ 0x00057400 전까지
+
+ - RAW = 0x00057000 - 0x00054000 + 0x00053200 = 0x00056200
+ - RVA가 '57000'인 경우, RAW는 '0x56200'이며, 파일에서 .data 섹션의 범위이다.
+
+
+ 4) RVA=80000 인 경우, RAW 구하기
+
+ - RAW = RVA - Virtual Address(섹션의 RVA) + Pointer to Raw Data
+
+메모리에서 .rsrc 섹션 범위		0x01059000 ~ 0x010BB798
+RVA				0x00080000
+Virtual Address(섹션의 RVA)		0x00059000
+Pointer to Raw Data		0x00057400
+파일에서 .rsrc 섹션 범위		0x00057400 ~ 0x000B9C00 전까지
+
+ - RAW = 0x00080000 - 0x00059000 + 0x00057400 = 0x0007E400
+ - RVA가 '80000'인 경우, RAW는 '0x7E400'이며, 파일에서 .rsrc 섹션의 범위이다.
+
+ 5) RVA=BDDDD 인 경우, RAW 구하기
+
+ - RAW = RVA - Virtual Address(섹션의 RVA) + Pointer to Raw Data
+
+메모리에서 .reloc 섹션 범위		0x010BC000 ~ 0x010BFB3C
+RVA				0x000BDDDD
+Virtual Address(섹션의 RVA)		0x000BC000
+Pointer to Raw Data		0x000B9C00
+파일에서 .rsrc 섹션 범위		0x000B9C00 ~ 0x000BD800 전까지
+
+ - RAW = 0x000BDDDD - 0x000BC000 + 0x000B9C00 = 0x000BB9DD
+ - RVA가 'BDDDD'인 경우, RAW는 '0xBB9DD'이며, 파일에서 .reloc 섹션의 범위이다.
+
+
+ 6) RVA=99CC 인 경우, RAW 구하기
+
+ - RAW = RVA - Virtual Address(섹션의 RVA) + Pointer to Raw Data
+
+메모리에서 .text 섹션 범위		0x01001000 ~ 0x01053CA1
+RVA				0x000099CC
+Virtual Address(섹션의 RVA)		0x00001000
+Pointer to Raw Data		0x00000400
+파일에서 .text 섹션 범위		0x00000400 ~ 0x00053200 전까지
+
+ - RAW = 0x000099CC - 0x00001000 + 0x00000400 = 0x00008DCC
+ - RVA가 '99CC'인 경우, RAW는 '0x8DCC'이며, 파일에서 .text 섹션의 범위이다.
+
+
+ 7) 'notepad.exe'를 PEview로 오픈하여 RVA=99CC 인 경우, RAW 구하기
+
+ - RAW = RVA - Virtual Address(섹션의 RVA) + Pointer to Raw Data
+
+메모리에서 .data 섹션 범위		0x01009000 ~ 0x0100B000 전까지
+RVA				0x000099CC
+Virtual Address(섹션의 RVA)		0x00009000
+Pointer to Raw Data		0x00007C00
+파일에서 .data 섹션 범위		0x00007C00 ~ 0x00008400 전까지
+
+ - RAW = 0x000099CC - 0x00009000 + 0x00007C00 = 0x000085CC
+ - RVA가 '99CC'인 경우, RAW는 '0x85CC'이며, 파일에서 .rsrc 섹션의 범위이다.
+ - 이런 경우는 "RVA에 대한 RAW를 정의할 수 없다." 라고 한다.
+ - Size of Raw Data < Virtue Size
