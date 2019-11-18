@@ -50,6 +50,11 @@
       (.reloc구역)
 @ IAT
 
+  - 분석 환경 : Vmware + Windows7(32bit)
+  - 분석 도구 : PEiD, PEview, CFF Explorer, HxD, OllyDbg
+  - 분석 파일 : 'calc(ASLR X).exe'
+  - 참조 사이트 : https://docs.microsoft.com/en-us/windows/win32/debug/pe-format
+
   1. IAT
   - Import Address Table
   - DLL 파일이 메모리 상에 로드되는 주소값을 갖고 있으며, 암시적 링크에서 사용하는 테이블이다.
@@ -60,7 +65,19 @@
   - DLL 이미지 내의 Entry Point에 대한 RVA 정보를 포함한다.
   - IDT는 PE 바디 영역에 있으며, IMAGE_OPTIONAL_HEADER에서 DATA Directory에서 확인할 수 있다.
   - IDT 구조체 배열의 시작 주소는 '0x00051afc'가 되며, 크기는 '0x00000154'가 된다.
-  - '0x00051afc' RVA
+  - '0x00051afc' RVA는 .text 섹션 범위에 포함된다.
+
+  1) IDT 구조체 RAW 구하기
+  - RAW = RVA - Virtual Address(섹션의 RVA) + Pointer to Raw Data
+
+  메모리에서 .text 섹션 범위		0x01001000 ~ 0x01053CA1
+  RVA				0x00051AFC
+  Virtual Address(섹션의 RVA)		0x00001000
+  Pointer to Raw Data		0x00000400
+  파일에서 .text 섹션 범위		0x00000400 ~ 0x00053200 전까지
+
+  - RAW = 0x00051AFC - 0x0001000 + 0x00000400 = 0x00050EFC
+  - RVA가 '51AFC'인 경우, RAW는 '0x50EFC'이며, 파일에서 .text 섹션의 범위이다.
 
    2) IDT 구조체 필드
    - 'cale.exe'파일을 HxD로 오픈하여 영역범위 확인
@@ -78,6 +95,7 @@
   FF FF FF FF   = Time Date Stamp
   FF FF FF FF   = Forwarder Chain
   14 1D 05 00   = *Name
+
    - DLL 이름의 RVA 주소이다.
    - DLL Name RVA : 0x0051d14
    - RAW = 51d14 - 1000 + 400 = 51114
@@ -100,7 +118,7 @@
 
    50 23 05 00 6A 23 05 00 7E 23 05 00 A5 00 00 80 8C 23 05 00 00 00 00 00
 
-    Shell32.dll의 첫번째 함수 RAW = 52350 -1000 + 400
+    Shell32.dll의 첫번째 함수 RAW = 52350 -1000 + 400 
     Shell32.dll의 두번째 함수 RAW = 5236A -1000 + 400
     Shell32.dll의 세번째 함수 RAW = 5237E -1000 + 400
     Shell32.dll의 네번째 함수 RAW = 5238C -1000 + 400
