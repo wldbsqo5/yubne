@@ -1,0 +1,270 @@
+6. 데이터 메모리 저장 방식
+
+ - 바이트 오더링 : 데이터를 메모리에 저장할 때 1byte 단위로 저장하는 방식이다.
+
+ 1) 빅 엔디안
+
+ - 데이터를 메모리에 저장할때 앞에서부터 순서대로 저장하는 방식이다.
+ - UNIX RISC 계열 CPU, 네트워크 프로토콜
+
+ 2) 리틀 엔디안
+
+ - 데이터를 메모리에 저장할때 뒤에서부터 순서대로 저장하는 방식이다.
+ - Intel 32bit 계열
+
+
+7. 리틀 엔디안 처리 방식 확인
+
+ 1) 리틀 엔디안 데이터 저장 방식
+
+BYTE b = 0x12;
+WORD w = 0x1234;
+DWORD dw = 0x12345678;
+char str[6] = "abcde";
+
+Type		Name	Size	빅 엔디안		리틀 엔디안
+
+BYTE		b	1byte	12		12
+WORD		w	2byte	12 34		34 12
+DWORD		dw	4byte	12 34 56 78	78 56 34 12
+char		str[6]	6byte	61 62 63 64 65 00	61 62 63 64 65 00
+
+ - char는 1byte이며 배열 선언시 각 바이트를 하나씩 연속해서 메모리에 저장한다.
+
+-------------------------------------------------------------------------------
+
+@ 어셈블리어(기본 명령어 이해)
+  1. 어셈블리어 형식
+    - 형식 : 옵코드(OPCODE) 오퍼랜드1(operand1) 오퍼랜드2(operand2)
+    - Intel 문법과 AT&T 문법이 존재한다.
+    - Intel 문법: 옵코드 [Destination] [Source]
+    - AT&T 문법 : 옵코드 [Source] [Destination]
+*(windows 에서는 반대로 해석할것)
+
+
+  2. 어셈블리 자료형 이름
+  BYTE              1byte  char
+  WORD              2byte  short
+  DWORD             4byte  int
+  QWORD             8byte  double
+
+
+  3. 복사/이동/대입 명령어
+
+  1) MOV
+  - 형식 : mov [Destination] [Source]
+  - 내용 : [Source]를 [Destination]에 대입
+  ex )
+   문제 :MOV ECX, EAX
+   해석 :EAX에 있는 값을 ECX에 대입
+
+  2) LEA
+  - 형식 : lea [Destination] [Source]
+  - 내용 : [Source]의 주소값을 [Destination]에 대입
+  ex )
+   문제 :LEA EAX, DWORD PTR SS:[EBP-4]
+   해석 :[ebp-4] 주소 값을 EAX에 대입
+
+
+  4. 더하기/빼기 명령어
+
+  1) ADD
+  - 형식 : add[Operand1] [Operand2]
+  - 내용 : [Operand1] 과 [Operand2]를 뺀값을 [Operand1]에 저장
+  ex )
+   문제 :ADD EAX,5
+   해석 :EAX = EAX+5
+   기타 :공간을 제거할때 사용(ADD ESP,8)
+
+  2) SUB
+  - 형식 : sub[Operand1] [Operand2]
+  - 내용 : [Operand1] 과 [Operand2]를 뺀값을 [Operand1]에 저장
+  ex )
+   문제 :SUB EAX,5
+   해석 :EAX = EAX-5
+   기타 :지역 변수를 위한 공간을 확보할때 사용 (SUB ESP,8)
+
+
+   5. 곱하기/나누기 명령어
+
+   1) IMUL
+   - 형식: IMUL [Operand1][Operand2]
+   - 내용: 두 오퍼랜드의 곱셈 값을 EAX에 저장
+   ex )
+   문제 :IMUL EAX,2
+   해석 :EAX=EAX*2
+
+   2)IDIV
+   - 형식: IDIV [Operand]
+   - 내용: EAX 값에서 [Operand]값을 나누기하여 해당 몫은 EAX에 나머지 값은 EDX에 저장
+   ex )
+   문제 : IDIV eax,2
+   해석 : EAX=EAX /2 (몫은 EAX, 나머지값은 EDX에 저장)
+   기타 : IDIV를 진행하기 이전에 부호 비트 확장을 하기 위한 코드를 확인할 수 있다.(CBW, CWD, CDQ)
+
+          CBW   BYTE  => WORD
+          CWD   WORD  => DWORD
+          CDQ   DWORD => QWORD
+
+
+   6. 증가/감소 명령어
+
+   1) INC
+   - 형식: INC [Operand]
+   - 내용: [Operand]에서 1을 증가
+   ex )
+   문제 : INC EBX
+   해석 : 현재 EBX 값에서 '1'을 증가
+
+   2) DEC
+   - 형식: DEC [Operand]
+   - 내용 : [Operand]에서 '1'을 감소
+   ex )
+   문제 : DEC EBX
+   해석 : 현재 EBX값에서 '1'을 감소
+
+   7. 비교 관련 명령어
+
+   1) CMP
+   - 형식 : CMP[Operand1][Operand2]
+   - 내용 : [Operand1] 값에서 [Operand2]값을 빼서 결과 값이 '0'인지 확인
+   ex )
+   문제 : CMP EAX, 1
+   해석 : EAX 값이 '1'이면 cmp 결과값은 '0' , 즉 두 오퍼랜드의 값이 동일
+   두 오퍼랜드 값을 비교하여 함수의 성공/실패 여부 판단가능
+   [참고]함수의 리턴값, 여러가지 가 EAX값에 들어간다.
+
+   2) TEST
+   - 형식 : TEST[Operand1][Operand2]
+   - 내용 : [Operand1] 값과 [Operand2]값을 AND 연산 실시 , 두 오퍼랜드 값이 '0'인지 확인
+   ex )
+   문제 : TEST EAX, EAX
+   해석 : EAX 값이 '0'이면 두 오퍼랜드 값 '0' 인지 확인
+
+   3) 주요 상태 플래그
+   - cmp, test 연산 이후에 분기 명령어가 있으면 상태 플래그를 확인하여 분기 실시
+
+   *ZF   Zero Flag                     연산결과 값이 '0'이면-> zf = 1
+   *SF   Sign Flag                     연산결과 값이 음수면 -> sf = 1
+   CF   Carry Flag                    부호없는 숫자의 연산 결과가 비트 범위를 넘으면 => cf = 1
+   OF   Overflow Flag                 부호있는 숫자의 연산 결과가 비트 범위를 넘으면 => of = 1
+
+
+   8. 분기 관련 명령어
+   - CMP, TEST 결과에 따라서 ZF(Zero Flag)가 '1'또는 '0'으로 설정되며, ZF 값에 따라서 분기된다.
+
+   1) JMP
+   - 형식 :JMP [Code Address]
+   - 내용 :비교 결과 값과 관계 없이 무조건 해당 주소로 점프
+   ex )
+    문제 : JMP 401140
+    해석 : 무조건 401140으로 점프
+
+   2) JZ(JE 동일)
+   - 형식 : JE [Code Address]
+   - 내용 : 비교결과 값이 '0'이면, 즉 ZF=1 이면 해당 주소로 점프
+   ex )
+    문제 : jz 401140으로
+    해석 : zf=1인 경우, 401140으로 점프
+   - 조건 : Operand1 == Operand2
+
+   3) JNZ(JNE 동일)
+   - 형식 : JNZ [Code Address]
+   - 내용 : 비교 결과값이 '0'아닌경우, 즉 zf=0 이면 해당 주소로 점프
+   ex )
+    문제 : JNZ 401140
+    해석 : ZF=0 인 경우, 401140으로 점프
+   - 조건 : Operand1 != Operand2
+
+   4) JLE(JBE 비슷함)
+   - 형식 : JLE [Code Address]
+   - 내용 : 비교 결과 값이 '0'이거나 (ZF=1), 작을 경우 해당 주소로 점프
+   ex )
+    문제 : JLE 401140
+    해석 : ZF=1이거나, 결과값이 작은 경우, 401140으로 점프
+   - 조건 : Operand1 <= Operand2
+
+   5) JGE(JAE 비슷함)
+   - 형식 : JGE [Code Address]
+   - 내용 : 비교 결과 값이 '0'이거나 (ZF=1), 큰 경우 해당 주소로 점프
+   ex )
+    문제 : JGE 401140
+    해석 : ZF=1이거나, 결과값이 큰 경우, 401140으로 점프
+   - 조건 : Operand1 >= Operand2
+
+   6) JL(JB 비슷함)
+   - 형식 : JL [code Address]
+   - 내용 : [Operand1]이 [Operand2]보다 작은 경우 해당 주소로 점프
+   ex )
+    문제 : JL 401140
+    해석 : [Operand1]이 [Operand2]보다 작은경우, 401140으로 점프
+   - 조건 : Operand1 < Operand2
+
+   7) JG(JA 비슷함)
+   - 형식 : JG [Code Address]
+   - 내용 : [Operand1] 이 [Operand2]보다 큰 경우 해당 주소로 점프
+   ex )
+    문제 : JG 401140
+    해석 : [Operand1] 이 [Operand2]보다 큰 경우 401140으로 점프
+
+
+    9. 스택 관련 명령어
+
+    1) PUSH
+    - 형식 : PUSH [Operand]
+    - 내용 : [Operand] 값을 스택에 4byte 공간을 확보하고 저장
+    ex )
+     문제 : PUSH ECX
+     해석 : 스택에 4byte 공간을 확보하고 ECX 값을 저장
+    - 기타 : 'PUSHAD'명령어는 EAX ~ EDI 레지스터 값을 스택에 저장(백업)할때 사용
+
+    2) CALL
+    - 형식 CALL [함수 주소]
+    - 내용 : [함수 주소]로 이동하여 함수를 실행한다.
+    ex ) CALL 401000
+     해석 : 401000 주소에 있는 함수를 실행
+    - 함수가 호출되어 실행되기 이전에 다음과 같은 2가지 동작 실시
+    (1) 'push eip'를 실시하여 eip 값을 스택에 저장, 그리고 해당 함수처리가 완료되면 스택에 저장된 eip 값을 확인하여 다음 명령어 코드가 실행될 수 있도록 한다.
+    (2) 'JMP [함수 주소]'를 실시하여 해당 함수로 점프 , 그리고 함수 내의 명령어를 실행
+
+    3) POP
+    - 형식 : POP [Operand]
+    - 내용 : 'PUSH'를 통해서 확보된 공간 및 값을 제거
+    ex ) POP ECX
+     해석 : 스택에 ECX 값을 위한 공간(4byte)를 제거
+    - 기타 : 'POPAD'명령어는 스택에 저장된 EAX ~EDI 레지스터를 제거(복원)할때 사용
+
+    4) RET
+    - 형식 : RET
+    - 내용 : CALL을 통해서 호출된 함수를 종료하고 다음 명령어로 이동
+    - RET가 실행되면 다음과 같은 2가지 동작을 실시
+    (1)'POP EIP'를 실시하여 함수 호출때 스택에 PUSH한 EIP값을 제거
+    (2)'JMP EIP'를 실시하여 EIP 값의 주소로 이동, 다음 명령어를 실행
+
+    5) NOP
+    - 형식 : NOP
+    - 내용 : 아무 명령도 수행하지 않는 명령어 , 명령어 사이에 빈공간(1byte)을 채워주는 역할
+            16진수 값 => '0X90' 사용
+            @ 어셈블리(스택 프레임)
+
+
+    1. 스택 프레임
+    - 스택 프레임은 EBP 레지스터를 사용하여 스택 내의 지역 변수, 함수 인자값, 리턴 주소에 접근하는 기법이다.
+    - 스택에는 지역 변수, 함수 인자값, 리턴 주소들이 저장된다.
+    - 스택 프레임은 함수가 호출될 때 생성되고, 함수 처리 완료되면 자동으로 소멸된다.
+
+    2. 올리디버거를 이용한 'stack.exe' 분석
+    - 메모리 주소, 레지스터 저장 값, 스택 내용, 메모리 덤프 내용 확인
+
+    1) main 함수 찾기(F8)
+    2) main 함수로 들어가기(F7)
+    3) main 함수에 BP 걸기(F2)
+    4) main 함수 프롤로그 확인(F8)
+    5) main 함수 본체 확인(F8)
+    6) add 함수 들어가기(F7)
+    7) add 함수에 BP 걸기(F2)
+    8) add 함수 프롤로그 확인(F8)
+    9) add 함수 본체 확인(F8)
+    10) add 함수 에필로그 확인(F8)
+    11) main 함수 본체 확인(F8)
+    12) main 함수 에필로그 확인(F8)
