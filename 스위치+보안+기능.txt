@@ -1,0 +1,238 @@
+1. MAC 플러딩 공격
+
+ - MAC 스푸핑 + 플러딩
+ - 출발지 MAC 주소를 변조하여 이더넷 프레임을 플러딩하는 공격
+ - 공격 도구 : macof
+ - 방어 기능 : port-security
+
+@ Internal_SW
+
+int e0/3
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address 000c.295c.a5ff 
+ switchport port-security violation shutdown
+ no shutdown
+
+@ Internal_SW
+
+default int e0/3
+!
+int e0/3
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation shutdown
+ no shutdown
+!
+
+2. Storm-Control 기능
+
+ - 유니케스트/브로드케스트/멀티케스트 트래픽양을 제한하는 기능
+
+int e0/3
+ storm-control broadcast level 30
+
+ - e0/3 포트로 송수신되는 브로드케스트양이 30프로 초과되는 포트를 블락킹하거나 셧다운 실시
+
+
+3. STP 관련 보안 기능
+
+ - BPDU 플러딩 공격
+ - 공격 도구 : yersinia -G
+ - 방어 기능 : port-security, BPDU Guard
+
+@ Internal_SW
+
+int e0/3
+ spanning-tree bpduguard enable
+!
+
+@ Internal_SW
+
+default int e0/3
+!
+int e0/3
+ shutdown
+ no shutdown
+!
+
+
+4. MAC ACL
+
+ - ETH 헤더의 MAC 주소를 검사하여 이더넷 프레임을 허용/차단하는 ACL
+
+@ Internal_SW
+
+mac access-list extended MAC_Filter
+ deny host 000c.295c.a5ff any
+ permit any any
+!
+int e0/3
+ mac access-group MAC_Filter in
+
+@ Internal_SW
+
+no mac access-list extended MAC_Filter
+!
+int e0/3
+ no mac access-group MAC_Filter in
+
+
+5. VLAN Access Map
+
+ - IP ACL를 이용하여 VLAN으로 접근하는 패켓을 허용/차단하는 기능
+
+@ Internal_SW
+
+access-list 110 permit tcp host 192.168.20.50 host 192.168.20.200 eq 23
+!
+vlan access-map TEST 10
+ match ip address 110
+ action drop
+!
+vlan access-map TEST 20
+ action forward
+!
+vlan filter TEST vlan-list 1
+
+@ Internal_SW
+
+no access-list 110 
+!
+no vlan access-map TEST 
+!
+no vlan filter TEST vlan-list 1
+
+
+6. SPAN(포트 미더링)
+
+ - 스위치 포트로 입출력 패켓들을 복제하여 패켓 분석기가 연결된 스위치 포트로 포워딩하는 기능
+ 
+@ Internal_SW
+
+monitor session 1 source interface e0/0 both
+monitor session 1 destination interface e1/0
+
+@ Internal_SW
+
+no monitor session 1 source interface e0/0 both
+no monitor session 1 destination interface e1/0
+
+7. DHCP 관련 공격
+
+ - DHCP 플러딩 공격 : DHCP 서버로 Discover를 플러딩하여 서버 IP 주소 할당 정보를 고갈시킴
+ - DHCP Offer 변조 공격 : 공격 시스템이 DHCP 클라이언트가 수신할 수 있도록 변조된 Offer 메세지를 보냄
+
+1) DHCP 메세지
+
+클라이언트(UDP 68)				DHCP 서버(UDP 67)
+
+SA 68					SA 67
+DA 67					DA 68
+------------------------- UDP			------------------------- UDP
+SA 0.0.0.0					SA DHCP 서버 IP 주소
+DA 255.255.255.255				DA 255.255.255.255
+------------------------- IP			------------------------- IP
+SA 클라이언트 MAC				SA DHCP 서버 MAC 주소
+DA FFFF.FFFF.FFFF				DA FFFF.FFFF.FFFF
+------------------------- ETH			------------------------- ETH
+
+Discover 메세지(서버 찾기) ->			
+					<- Offer 메세지(IP 주소 정보)
+Request 메세지(IP 할당 요청) -> 
+					<- Ack 메세지(Offer 내용 동일)
+ 
+
+ 2) 'Discover' 메세지 플러딩
+ 
+ - 'Discover' 메세지를 플러딩하여 DHCP 서버 IP 주소 할당 정보를 고갈시킴
+
+root@kali:~# dhcpx -v -i eth1 -D 192.168.20.201
+
+ 3) 'Offer' 메세지 변조
+
+ - 변조된 'Offer' 메세지를 전송하여 클라이언트가 IP 할당 받게 유도함
+
+root@kali:~# ettercap -T -M dhcp:192.168.20.40-45/255.255.255.0/8.8.8.8
+
+ 4) DHCP Snooping 기능
+
+ - DHCP 서버가 연결된 포트를 제외한 나머지 포트로 수신되는 모든 Offer 메세지 차단
+ 
+@ Internal_SW
+
+ip dhcp snooping				// DHCP Snooping 기능 활성화
+ip dhcp snooping vlan 1			// VLAN 1에 포함된 포트 대상 DHCP 메세지 검사
+no ip dhcp snooping information option	// DHCP Snooping 옵션 기능 비활성화
+!
+int e1/0
+ ip dhcp snooping trust		// DHCP 서버가 연결된 포트로 Offer 메세지는 수신되어야 함
+
+
+root@kali:~# ettercap -T -M dhcp:192.168.20.40-45/255.255.255.0/8.8.8.8
+
+ - win7에서 자동 받기 or 랜카드 활성화 -> ipconfig /all
+
+Internal_SW#show ip dhcp snooping binding 
+MacAddress          IpAddress        Lease(sec)  Type           VLAN  Interface
+------------------  ---------------  ----------  -------------  ----  --------------------
+00:0C:29:38:7F:A8   192.168.20.31    691160      dhcp-snooping   1     Ethernet0/2
+Total number of bindings: 1
+
+8. ARP 스푸핑
+
+ - 변조된 ARP 응답 메세지를 전송하여 스니핑을 실시하는 내부 공격
+
+ 1) ARP 스푸핑
+
+root@kali:~# arpspoof -i eth1 -t 192.168.20.100 -r 192.168.20.31
+
+ 2) Dynamic ARP Inspection(DAI)
+
+@ Internal_SW
+
+ip arp inspection vlan 1	//  VLAN 1에 포함된 포트으로 수신되는 ARP 메세지 검사
+!
+arp access-list Static-DAI
+ permit ip host 192.168.20.50 mac host 000c.295c.a5ff
+ permit ip host 192.168.20.201 mac host 000C.2997.87C0
+!
+ip arp inspection filter Static-DAI vlan 1
+!
+int e0/0			// ARP 검사 제외 포트(Ex : 게이트웨이 연결 포트, 서버 연결 포트)
+ ip arp inspection trust
+!
+int e0/3			// 초당 ARP 메세지가 많이 들어오면 포트를 셧다운하는 기능 비활성화
+ ip arp inspection limit none
+
+9. IP Source 가드 
+
+ - IP/MAC 스푸핑 차단
+
+				            <-------- SA 192.168.20.100/SA aabb.cc00.1000
+				            <-------- SA 192.168.20.50/SA aabb.cc00.1000
+				            <-------- SA 192.168.20.100/SA 000c.295c.a5ff
+win2008-------------------[e1/0]Internal_SW[e0/3]--------------------------Kali
+192.168.20.201						192.168.20.50
+000C.2997.87C0						000c.295c.a5ff
+
+ip source binding 000c.295c.a5ff vlan 1 192.168.20.50 int e0/3
+ip source binding 000C.2997.87C0 vlan 1 192.168.20.201 int e1/0
+ip source binding aabb.cc00.1010 vlan 1 192.168.20.100 int e0/0   
+!
+int e0/3
+ ip verify source
+
+root@kali:~# hping3 --icmp -i eth1 192.168.20.201 -a 192.168.20.100
+
+[참고] FW E0/1 MAC 주소 확인
+
+FW#show int e0/1
+Ethernet0/1 is up, line protocol is up 
+  Hardware is AmdP2, address is aabb.cc00.1010 (bia aabb.cc00.1010)
+
